@@ -6,7 +6,7 @@
 export default {};
 </script>
 
-<style>
+<style scoped>
 .trace-container {
   width: 100%;
   height: 100%;

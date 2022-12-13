@@ -1,9 +1,10 @@
 import { AdminLoginIn, RegisterAdmin } from '@/api'
 const state = {
-
+    userInfo: {},
 };
 const mutations = {
-    ADMINLOGIN() {
+    ADMINLOGIN(state, info) {
+        state.userInfo = info;
     },
     ADMINREGISTER() {
     }
@@ -13,8 +14,8 @@ const actions = {
     async adminLogin({ commit }, adminInfo = {}) {
         let result = await AdminLoginIn(adminInfo);
         if (result.code == 200) {
-            commit('ADMINLOGIN');
-            return 'ok'
+            commit('ADMINLOGIN', result.data.userInfo);
+            return 'ok';
         } else {
             return Promise.reject(new Error('failed'))
         }
@@ -31,7 +32,7 @@ const actions = {
     }
 };
 const getters = {
-
+    userInfoGetter: (state) => state.userInfo,
 };
 export default {
     state,

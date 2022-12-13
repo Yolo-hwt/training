@@ -30,8 +30,8 @@ export default [
         component: () => import('@/pages/Graph'),
         children: [
             {
-                path: "*",
-                redirect: "monitor"
+                path: "/graph",
+                redirect: "/graph/monitor"
             },
             {
                 name: 'monitor',

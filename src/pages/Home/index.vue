@@ -143,7 +143,7 @@ footer {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   text-align: center;
-  min-height: 330px;
+  min-height: 360px;
   height: auto;
   border-radius: 20px;
   color: #fff;

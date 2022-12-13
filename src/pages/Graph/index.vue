@@ -1,7 +1,11 @@
 <template>
   <div class="graph-container">
-    <header>地图</header>
+    <header>
+      <h1>实时监测</h1>
+      <el-button type="success" round>安全退出</el-button>
+    </header>
     <router-view class="graph-menu-view"></router-view>
+    <!-- <div class="graph-menu-view"></div> -->
     <footer>footer</footer>
   </div>
 </template>
@@ -9,7 +13,7 @@
 <script>
 export default {
   mounted() {
-    // this.$router.push({ name: "monitor" });
+    //this.$router.push({ name: "monitor" });
   },
 };
 </script>
