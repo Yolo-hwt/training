@@ -1,6 +1,6 @@
 <template>
   <div class="home-page">
-    <header><h2>港口库场流动机械运行监控系统</h2></header>
+    <header><h1>港口库场流动机械运行监控系统</h1></header>
     <!-- <img class="home-bg" src="../../assets/homebg.jpg" alt="主页背景" /> -->
     <div class="wrapper">
       <div class="cols home-page-cols">
@@ -80,6 +80,10 @@ header {
   background: rgba(0, 0, 0, 0.05);
   color: #fff;
   box-shadow: 0px 0px 10px rgb(157, 191, 207);
+}
+header h1 {
+  line-height: 90px;
+  text-align: center;
 }
 footer {
   position: absolute;

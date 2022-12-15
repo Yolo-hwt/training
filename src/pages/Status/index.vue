@@ -1,12 +1,16 @@
 <template>
-  <div class="test-container">
+  <div class="status-container">
     <header>
       <h1>状态管理</h1>
-      <el-button type="success" round>安全退出</el-button>
+      <div class="status-nav">
+        <el-button type="success" round @click="backToHomePage"
+          >安全退出</el-button
+        >
+      </div>
     </header>
-    <div class="test-body">
-      <div class="test-search">
-        <div class="test-search-left">
+    <div class="status-body">
+      <div class="status-search">
+        <div class="status-search-item">
           <h2>设备选择</h2>
           <el-select v-model="equipValue" multiple placeholder="请选择">
             <el-option
@@ -18,7 +22,7 @@
             </el-option>
           </el-select>
         </div>
-        <div class="test-search-right">
+        <div class="status-search-item">
           <h2>日期选择</h2>
           <el-date-picker
             v-model="timeValue"
@@ -32,9 +36,11 @@
           >
           </el-date-picker>
         </div>
-        <el-button type="primary" round>搜索</el-button>
+        <div class="status-search-item status-search-btn">
+          <el-button type="primary" round class="status-el-btn">搜索</el-button>
+        </div>
       </div>
-      <div class="test-table">
+      <div class="status-table">
         <el-table :data="tableData" style="width: 85%" height="580">
           <el-table-column fixed prop="date" label="日期" width="150">
           </el-table-column>
@@ -177,11 +183,16 @@ export default {
       ],
     };
   },
+  methods: {
+    backToHomePage() {
+      this.$router.push("/home");
+    },
+  },
 };
 </script>
 
 <style scoped>
-.test-container {
+.status-container {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -189,16 +200,9 @@ export default {
   background-color: skyblue;
 }
 
-.test-body {
+.status-body {
   flex: 1;
   background-color: rgb(28, 190, 136);
-}
-header {
-  width: 100%;
-  height: 90px;
-  background: rgba(0, 0, 0, 0.05);
-  color: #fff;
-  box-shadow: 0px 0px 10px rgb(157, 191, 207);
 }
 footer {
   width: 100%;
@@ -209,5 +213,47 @@ footer {
   background: rgba(0, 0, 0, 0.5);
   color: lightgray;
   font-size: 0.5rem;
+}
+header {
+  width: 100%;
+  height: 90px;
+  background: rgba(0, 0, 0, 0.05);
+  color: #fff;
+  box-shadow: 0px 0px 10px rgb(157, 191, 207);
+}
+header h1 {
+  display: inline-block;
+  line-height: 90px;
+  width: 50%;
+  padding-left: 30px;
+}
+
+.status-nav {
+  float: right;
+  display: inline-block;
+  line-height: 90px;
+  padding-right: 30px;
+}
+.status-search {
+  display: flex;
+  justify-content: flex-start;
+  margin: 25px 0 30px 0;
+  height: 100px;
+}
+.status-search-item {
+  padding: 0 30px;
+}
+.status-search-item h2 {
+  padding: 10px 0;
+}
+.status-search-btn {
+  display: inline-block;
+  line-height: 100px;
+}
+.status-el-btn {
+  transform: translateY(20px);
+}
+.status-table .el-table {
+  margin-left: 30px;
 }
 </style>

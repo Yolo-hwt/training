@@ -2,11 +2,15 @@
   <div class="test-container">
     <header>
       <h1>点检模块</h1>
-      <el-button type="success" round>安全退出</el-button>
+      <div class="test-nav">
+        <el-button type="success" round @click="backToHomePage"
+          >安全退出</el-button
+        >
+      </div>
     </header>
     <div class="test-body">
       <div class="test-search">
-        <div class="test-search-left">
+        <div class="test-search-item">
           <h2>设备选择</h2>
           <el-select v-model="equipValue" multiple placeholder="请选择">
             <el-option
@@ -18,7 +22,7 @@
             </el-option>
           </el-select>
         </div>
-        <div class="test-search-right">
+        <div class="test-search-item">
           <h2>日期选择</h2>
           <el-date-picker
             v-model="timeValue"
@@ -29,7 +33,9 @@
           >
           </el-date-picker>
         </div>
-        <el-button type="primary" round>搜索</el-button>
+        <div class="test-search-btn test-search-item">
+          <el-button type="primary" round class="test-el-btn">搜索</el-button>
+        </div>
       </div>
       <div class="test-table">
         <el-table :data="tableData" style="width: 85%" height="580">
@@ -172,6 +178,11 @@ export default {
       ],
     };
   },
+  methods: {
+    backToHomePage() {
+      this.$router.push("/home");
+    },
+  },
 };
 </script>
 
@@ -184,17 +195,6 @@ export default {
   background-color: skyblue;
 }
 
-.test-body {
-  flex: 1;
-  background-color: rgb(28, 190, 136);
-}
-header {
-  width: 100%;
-  height: 90px;
-  background: rgba(0, 0, 0, 0.05);
-  color: #fff;
-  box-shadow: 0px 0px 10px rgb(157, 191, 207);
-}
 footer {
   width: 100%;
   height: 50px;
@@ -204,5 +204,51 @@ footer {
   background: rgba(0, 0, 0, 0.5);
   color: lightgray;
   font-size: 0.5rem;
+}
+header {
+  width: 100%;
+  height: 90px;
+  background: rgba(0, 0, 0, 0.05);
+  color: #fff;
+  box-shadow: 0px 0px 10px rgb(157, 191, 207);
+}
+header h1 {
+  display: inline-block;
+  line-height: 90px;
+  width: 50%;
+  padding-left: 30px;
+}
+
+.test-nav {
+  float: right;
+  display: inline-block;
+  line-height: 90px;
+  padding-right: 30px;
+}
+.test-body {
+  flex: 1;
+  background-color: rgb(28, 190, 136);
+}
+.test-search {
+  display: flex;
+  justify-content: flex-start;
+  margin: 25px 0 30px 0;
+  height: 100px;
+}
+.test-search-item {
+  padding: 0 30px;
+}
+.test-search-item h2 {
+  padding: 10px 0;
+}
+.test-search-btn {
+  display: inline-block;
+  line-height: 100px;
+}
+.test-el-btn {
+  transform: translateY(20px);
+}
+.test-table .el-table {
+  margin-left: 30px;
 }
 </style>
