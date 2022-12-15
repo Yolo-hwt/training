@@ -184,6 +184,7 @@ export default {
     };
   },
   methods: {
+    //返回主页
     backToHomePage() {
       this.$router.push("/home");
     },
