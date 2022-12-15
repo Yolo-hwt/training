@@ -15,14 +15,18 @@
           @click="changeRouterView('monitor')"
           >{{ monitorobj.title }}</a
         >
-        <el-button type="success" round @click="backToHomePage"
+        <el-button
+          type="success"
+          round
+          @click="backToHomePage"
+          class="graph-el-btn"
           >安全退出</el-button
         >
       </div>
     </header>
     <router-view class="graph-menu-view"></router-view>
     <!-- <div class="graph-menu-view"></div> -->
-    <footer>footer</footer>
+    <footer>Copyright 2022 by hwt v1.0</footer>
   </div>
 </template>
 
@@ -85,14 +89,24 @@ export default {
   flex-direction: column;
   width: 100%;
   min-height: 100vh;
-  background-color: skyblue;
+  background-color: #4c9ae9;
 }
 .graph-container h1 {
   display: inline-block;
   width: 50%;
   line-height: 90px;
   padding-left: 30px;
+  letter-spacing: 0.5em;
+  font-size: 40px;
+  text-shadow: 4px 4px 6px black;
 }
+.graph-container .graph-el-btn {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  box-shadow: 2px 2px 2px black;
+}
+
 .graph-menu-view {
   flex: 1;
 }
@@ -104,22 +118,25 @@ export default {
 }
 .nav-static {
   display: inline-block;
-  width: 150px;
+  width: 200px;
   text-decoration: none;
   font-size: 20px;
   text-align: center;
   color: #fff;
   cursor: pointer;
+  letter-spacing: 0.5em;
+  font-size: 23px;
+  text-shadow: 4px 4px 6px black;
 }
 .nav-static:hover {
-  font-size: 22px;
+  font-size: 24px;
   color: rgb(250, 200, 88);
 }
 .nav-last {
   margin-right: 100px;
 }
 .nav-active {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 600;
   color: rgb(250, 200, 88);
 }
@@ -138,7 +155,7 @@ footer {
 
   line-height: 50px;
   text-align: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   color: lightgray;
   font-size: 0.5rem;
 }

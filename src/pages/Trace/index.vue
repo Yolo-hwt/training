@@ -4,7 +4,7 @@
     <div class="trace-right">
       <div id="piechart"></div>
       <div class="trace-opera">
-        <h2>历史查询</h2>
+        <h2>轨迹查询</h2>
         <div class="opera-item">
           <span>设备</span>
           <el-select v-model="equipValue" placeholder="选择设备">
@@ -31,8 +31,12 @@
         </div>
 
         <div class="opera-item">
-          <el-button type="primary" round>查看路径</el-button>
-          <el-button type="primary" round>发布指令</el-button>
+          <el-button type="primary" round class="trace-el-btn"
+            >查看路径</el-button
+          >
+          <el-button type="primary" round class="trace-el-btn"
+            >发布指令</el-button
+          >
         </div>
       </div>
     </div>
@@ -86,8 +90,16 @@ export default {
       ],
       equipValue: "",
       workTime: 0,
-      chartAxisLableFontSize: "12px",
+      //echarts坐标轴刻度label字体
+      chartAxisLableFontSize: "13px",
+      //echarts标头title字体
       chartTitleFontSize: "24px",
+      //echarts标尺字体
+      chartScaleFontSize: "20px",
+      //echarts标尺宽度
+      chartScaleWidth: "25px",
+      //地图缩放级别
+      mapZoomLevel: 20,
     };
   },
   mounted() {
@@ -98,10 +110,10 @@ export default {
     //百度地图初始化
     initMap() {
       var map = new BMapGL.Map("trace-map"); // 创建Map实例
-      map.centerAndZoom(new BMapGL.Point(116.404, 39.915), 11); // 初始化地图,设置中心点坐标和地图级别
+      map.centerAndZoom(new BMapGL.Point(116.404, 39.915), this.mapZoomLevel); // 初始化地图,设置中心点坐标和地图级别
       map.enableScrollWheelZoom(true); //开启鼠标滚轮缩放
     },
-    //初始化echarts表格
+    //初始化echarts图表
     initPieChart() {
       var chartDom = document.getElementById("piechart");
       var myChart = echarts.init(chartDom);
@@ -154,7 +166,10 @@ export default {
           inRange: {
             color: ["#65B581", "#FFCE34", "#FD665F"],
           },
-          itemWidth: "25px",
+          textStyle: {
+            fontSize: this.chartScaleFontSize,
+          },
+          itemWidth: this.chartScaleWidth,
         },
         series: [
           {
@@ -179,6 +194,10 @@ export default {
 </script>
 
 <style scoped>
+.trace-container .trace-el-btn {
+  font-size: 17px;
+  box-shadow: 2px 2px 2px black;
+}
 .trace-container {
   display: flex;
   justify-content: space-around;

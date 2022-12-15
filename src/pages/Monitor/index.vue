@@ -43,8 +43,12 @@
           <span>min</span>
         </div>
         <div class="opera-item">
-          <el-button type="primary" round>查看路径</el-button>
-          <el-button type="primary" round>发布指令</el-button>
+          <el-button type="primary" round class="graph-el-btn"
+            >查看路径</el-button
+          >
+          <el-button type="primary" round class="graph-el-btn"
+            >发布指令</el-button
+          >
         </div>
       </div>
     </div>
@@ -123,6 +127,8 @@ export default {
       ],
       siteValue: "",
       workTime: 0,
+      //地图缩放级别
+      mapZoomLevel: 20,
     };
   },
   mounted() {
@@ -133,7 +139,7 @@ export default {
     //初始化百度地图
     initMap() {
       var map = new BMapGL.Map("monitor-map"); // 创建Map实例
-      map.centerAndZoom(new BMapGL.Point(116.404, 39.915), 11); // 初始化地图,设置中心点坐标和地图级别
+      map.centerAndZoom(new BMapGL.Point(116.404, 39.915), this.mapZoomLevel); // 初始化地图,设置中心点坐标和地图级别
       map.enableScrollWheelZoom(true); //开启鼠标滚轮缩放
     },
     //初始化ehcarts表格
@@ -192,6 +198,10 @@ export default {
 </script>
 
 <style scoped>
+.graph-container .graph-el-btn {
+  font-size: 17px;
+  box-shadow: 2px 2px 2px black;
+}
 .monitor-container {
   display: flex;
   justify-content: space-around;

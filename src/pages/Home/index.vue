@@ -33,7 +33,7 @@
         </div>
       </div>
     </div>
-    <footer>Copyright 2022</footer>
+    <footer>Copyright 2022 by hwt v1.0</footer>
   </div>
 </template>
 
@@ -84,6 +84,9 @@ header {
 header h1 {
   line-height: 90px;
   text-align: center;
+  letter-spacing: 0.2em;
+  font-size: 40px;
+  text-shadow: 4px 4px 6px black;
 }
 footer {
   position: absolute;

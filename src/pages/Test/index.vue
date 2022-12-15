@@ -3,7 +3,11 @@
     <header>
       <h1>点检模块</h1>
       <div class="test-nav">
-        <el-button type="success" round @click="backToHomePage"
+        <el-button
+          type="success"
+          round
+          @click="backToHomePage"
+          class="test-el-btn"
           >安全退出</el-button
         >
       </div>
@@ -54,7 +58,7 @@
         </el-table>
       </div>
     </div>
-    <footer>footer</footer>
+    <footer>Copyright 2022 by hwt v1.0</footer>
   </div>
 </template>
 
@@ -193,7 +197,7 @@ export default {
   flex-direction: column;
   width: 100%;
   min-height: 100vh;
-  background-color: skyblue;
+  background-color: #4c9ae9;
 }
 
 footer {
@@ -202,7 +206,7 @@ footer {
 
   line-height: 50px;
   text-align: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   color: lightgray;
   font-size: 0.5rem;
 }
@@ -218,12 +222,24 @@ header h1 {
   line-height: 90px;
   width: 50%;
   padding-left: 30px;
+  letter-spacing: 0.5em;
+  font-size: 40px;
+  text-shadow: 4px 4px 6px black;
+}
+
+.test-container .test-el-btn {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  box-shadow: 2px 2px 2px black;
+  transform: translateY(20px);
 }
 
 .test-nav {
   float: right;
-  display: inline-block;
-  line-height: 90px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding-right: 30px;
 }
 .test-body {
@@ -245,9 +261,6 @@ header h1 {
 .test-search-btn {
   display: inline-block;
   line-height: 100px;
-}
-.test-el-btn {
-  transform: translateY(20px);
 }
 .test-table .el-table {
   margin-left: 30px;
