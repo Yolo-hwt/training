@@ -31,7 +31,11 @@
         </div>
 
         <div class="opera-item">
-          <el-button type="primary" round class="trace-el-btn"
+          <el-button
+            type="primary"
+            round
+            class="trace-el-btn"
+            @click="removeOverLay(mapPolyLine)"
             >查看路径</el-button
           >
           <el-button type="primary" round class="trace-el-btn"
@@ -44,6 +48,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import * as echarts from "echarts/core";
 import {
   TitleComponent,
@@ -98,20 +103,164 @@ export default {
       chartScaleFontSize: "20px",
       //echarts标尺宽度
       chartScaleWidth: "25px",
-      //地图缩放级别
-      mapZoomLevel: 20,
+      //地图实例
+      mapInstance: null,
+      //路径动画
+      mapTrackAni: null,
+      //标注图片
+      mapSignIcon: require("../../assets/port.png"),
+      //动画路径
+      mapPolyLine: null,
     };
+  },
+  computed: {
+    ...mapGetters({
+      mapConfig: "mapConfigGetter",
+    }),
   },
   mounted() {
     this.initMap();
     this.initPieChart();
   },
+  beforeRouteLeave(to, from, next) {
+    if (this.mapTrackAni) {
+      console.log("cancel animation");
+      this.mapTrackAni.cancel();
+    }
+    this.mapTrackAni = null;
+    next();
+  },
   methods: {
-    //百度地图初始化
-    initMap() {
-      var map = new BMapGL.Map("trace-map"); // 创建Map实例
-      map.centerAndZoom(new BMapGL.Point(116.404, 39.915), this.mapZoomLevel); // 初始化地图,设置中心点坐标和地图级别
-      map.enableScrollWheelZoom(true); //开启鼠标滚轮缩放
+    //初始化百度地图
+    async initMap() {
+      //初始化配置
+      await this.createMap();
+      //添加地图控制类
+      await this.addMapControler();
+      //创建地图标点
+      await this.addMapPoint();
+      //添加lable
+      await this.addMapLable();
+      //动画
+      this.pathPlayBackAnime(this.mapConfig.mapSignList);
+    },
+    //创建地图
+    async createMap() {
+      // 创建Map实例
+      this.mapInstance = new BMapGL.Map("trace-map");
+      // 初始化地图,设置中心点坐标和地图级别
+      this.mapInstance.centerAndZoom(
+        new BMapGL.Point(
+          this.mapConfig.mapCenterPoint.longitude,
+          this.mapConfig.mapCenterPoint.dimension
+        ),
+        this.mapConfig.mapZoomLevel
+      );
+      this.mapInstance.enableScrollWheelZoom(true); //开启鼠标滚轮缩放
+      this.mapInstance.setHeading(this.mapConfig.mapHeaing); //设置地图旋转角度
+      this.mapInstance.setTilt(this.mapConfig.mapTilt); //设置地图的倾斜角度
+      //可以试着在地图区域按住鼠标右键进行拖动，地图的视角和旋转角度会随之改变
+    },
+    //添加控件
+    async addMapControler() {
+      /**
+       * 添加控件
+       */
+      var scaleCtrl = new BMapGL.ScaleControl(); // 添加比例尺控件
+      this.mapInstance.addControl(scaleCtrl);
+      var zoomCtrl = new BMapGL.ZoomControl(); // 添加缩放控件
+      this.mapInstance.addControl(zoomCtrl);
+      // var cityCtrl = new BMapGL.CityListControl(); // 添加城市列表控件
+      // map.addControl(cityCtrl);
+    },
+    //添加标点
+    async addMapPoint() {
+      var that = this;
+      for (const sign of this.mapConfig.mapSignList) {
+        // console.log(sign);
+        let point = new BMapGL.Point(sign.longitude, sign.dimension);
+
+        //标注图层
+        // console.log(that.mapSignIcon);
+        let myIcon = new BMapGL.Icon(
+          that.mapSignIcon,
+          new BMapGL.Size(70, 80),
+          {
+            //   // 指定定位位置。
+            //   // 当标注显示在地图上时，其所指向的地理位置距离图标左上
+            //   // 角各偏移10像素和25像素。您可以看到在本例中该位置即是
+            //   // 图标中央下端的尖角位置。
+            anchor: new BMapGL.Size(5, 52),
+            //   // 设置图片偏移。
+            //   // 当您需要从一幅较大的图片中截取某部分作为标注图标时，您
+            //   // 需要指定大图的偏移位置，此做法与css sprites技术类似。
+            //   imageOffset: new BMapGL.Size(0, 0 - 25), // 设置图片偏移
+          }
+        );
+        // 创建标注对象并添加到地图
+        let marker = new BMapGL.Marker(point, { icon: myIcon });
+        this.mapInstance.addOverlay(marker); // 将标注添加到地图中
+
+        //提示信息
+        let infoWindow = new BMapGL.InfoWindow();
+        let title = "sid:" + sign.sid;
+        infoWindow.setTitle("<h2>" + title + "</h2>");
+
+        let text = sign.longitude + "," + sign.dimension;
+        infoWindow.setContent("<h3>码头位置:(" + text + ")</h3>");
+        //地图标点点击事件
+        marker.addEventListener("click", () => {
+          that.mapInstance.openInfoWindow(infoWindow, point); // 打开信息窗口
+        });
+      }
+    },
+    //添加文本标注
+    async addMapLable() {
+      var that = this;
+      for (const sign of this.mapConfig.mapSignList) {
+        // console.log(sign);
+        let point = new BMapGL.Point(sign.longitude, sign.dimension);
+        let content = "<span>码头" + sign.sid + "</span>";
+        let label = new BMapGL.Label(content, {
+          // 创建文本标注
+          position: point,
+          offset: new BMapGL.Size(10, 15),
+        });
+        this.mapInstance.addOverlay(label); // 将标注添加到地图中
+        label.setStyle({
+          // 设置label的样式
+          color: "#000",
+          fontSize: "16px",
+          border: "2px solid #4c9ae9",
+          "border-radius": "10px",
+        });
+      }
+    },
+    //路径回放动画
+    async pathPlayBackAnime(path) {
+      var that = this;
+      var point = [];
+      for (let i = 0; i < path.length; i++) {
+        point.push(new BMapGL.Point(path[i].longitude, path[i].dimension));
+      }
+      this.mapPolyLine = new BMapGL.Polyline(point);
+      this.mapPolyLine.setStrokeColor("#fac858");
+      this.mapPolyLine.setStrokeWeight(10);
+      this.mapTrackAni = new BMapGLLib.TrackAnimation(
+        this.mapInstance,
+        that.mapPolyLine,
+        {
+          overallView: true, // 动画完成后自动调整视野到总览
+          tilt: 0, // 轨迹播放的角度，默认为55
+          duration: 20000, // 动画持续时长，默认为10000，单位ms
+          delay: 3000, // 动画开始的延迟，默认0，单位ms
+        }
+      );
+      this.mapTrackAni.start();
+    },
+    //移除覆盖物
+    removeOverLay(overlay) {
+      this.mapInstance.removeOverlay(overlay);
     },
     //初始化echarts图表
     initPieChart() {

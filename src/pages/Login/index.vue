@@ -10,11 +10,11 @@
           <div class="self-title"><h1>港口库场流动机械运行监控系统</h1></div>
           <h2 class="title">登录</h2>
           <div class="input-field" id="signIn-name">
-            <i class="fas fa-user"></i>
+            <i class="iconfont icon-yonghu"></i>
             <input type="text" placeholder="工号" v-model="signInUserId" />
           </div>
           <div class="input-field" id="signIn-psd">
-            <i class="fas fa-lock"></i>
+            <i class="iconfont icon-mima"></i>
             <input
               type="password"
               placeholder="密码"

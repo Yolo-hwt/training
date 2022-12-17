@@ -13,49 +13,54 @@
       </div>
     </header>
     <div class="test-body">
-      <div class="test-search">
-        <div class="test-search-item">
-          <h2>设备选择</h2>
-          <el-select v-model="equipValue" multiple placeholder="请选择">
-            <el-option
-              v-for="item in equipOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+      <div class="test-body-left">
+        <div class="test-search">
+          <div class="test-search-item">
+            <h2>设备选择</h2>
+            <el-select v-model="equipValue" multiple placeholder="请选择">
+              <el-option
+                v-for="item in equipOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </div>
+          <div class="test-search-item">
+            <h2>日期选择</h2>
+            <el-date-picker
+              v-model="timeValue"
+              align="right"
+              type="date"
+              placeholder="选择日期"
+              :picker-options="pickerOptions"
             >
-            </el-option>
-          </el-select>
+            </el-date-picker>
+          </div>
+          <div class="test-search-btn test-search-item">
+            <el-button type="primary" round class="test-el-btn">搜索</el-button>
+          </div>
         </div>
-        <div class="test-search-item">
-          <h2>日期选择</h2>
-          <el-date-picker
-            v-model="timeValue"
-            align="right"
-            type="date"
-            placeholder="选择日期"
-            :picker-options="pickerOptions"
-          >
-          </el-date-picker>
-        </div>
-        <div class="test-search-btn test-search-item">
-          <el-button type="primary" round class="test-el-btn">搜索</el-button>
+        <div class="test-table">
+          <el-table :data="tableData" stripe style="width: 85%" height="520">
+            <el-table-column fixed prop="date" label="日期" width="150">
+            </el-table-column>
+            <el-table-column prop="name" label="姓名" width="120">
+            </el-table-column>
+            <el-table-column prop="province" label="省份" width="120">
+            </el-table-column>
+            <el-table-column prop="city" label="市区" width="120">
+            </el-table-column>
+            <el-table-column prop="address" label="地址" width="300">
+            </el-table-column>
+            <el-table-column prop="zip" label="邮编" width="120">
+            </el-table-column>
+          </el-table>
         </div>
       </div>
-      <div class="test-table">
-        <el-table :data="tableData" style="width: 85%" height="580">
-          <el-table-column fixed prop="date" label="日期" width="150">
-          </el-table-column>
-          <el-table-column prop="name" label="姓名" width="120">
-          </el-table-column>
-          <el-table-column prop="province" label="省份" width="120">
-          </el-table-column>
-          <el-table-column prop="city" label="市区" width="120">
-          </el-table-column>
-          <el-table-column prop="address" label="地址" width="300">
-          </el-table-column>
-          <el-table-column prop="zip" label="邮编" width="120">
-          </el-table-column>
-        </el-table>
+      <div class="test-body-right">
+        <div id="test-chart"></div>
       </div>
     </div>
     <footer>Copyright 2022 by hwt v1.0</footer>
@@ -63,6 +68,28 @@
 </template>
 
 <script>
+import * as echarts from "echarts/core";
+import {
+  TitleComponent,
+  ToolboxComponent,
+  TooltipComponent,
+  GridComponent,
+  DataZoomComponent,
+} from "echarts/components";
+import { LineChart } from "echarts/charts";
+import { UniversalTransition } from "echarts/features";
+import { CanvasRenderer } from "echarts/renderers";
+
+echarts.use([
+  TitleComponent,
+  ToolboxComponent,
+  TooltipComponent,
+  GridComponent,
+  DataZoomComponent,
+  LineChart,
+  CanvasRenderer,
+  UniversalTransition,
+]);
 export default {
   data() {
     return {
@@ -179,13 +206,144 @@ export default {
           address: "上海市普陀区金沙江路 1518 弄",
           zip: 200333,
         },
+        {
+          date: "2016-05-03",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-08",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-06",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-07",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
       ],
     };
+  },
+  mounted() {
+    this.initLineChart();
   },
   methods: {
     //返回主页
     backToHomePage() {
       this.$router.push("/home");
+    },
+    initLineChart() {
+      var chartDom = document.getElementById("test-chart");
+      var myChart = echarts.init(chartDom);
+      var option;
+
+      let base = +new Date(2000, 10, 9);
+      let oneDay = 24 * 3600 * 1000;
+      let data = [[base, Math.random() * 20]];
+      for (let i = 1; i < 10; i++) {
+        let now = new Date((base += oneDay));
+        data.push([+now, Math.round(Math.random() * 20)]);
+      }
+      option = {
+        tooltip: {
+          trigger: "axis",
+          position: function (pt) {
+            return [pt[0], "10%"];
+          },
+        },
+        grid: {
+          containLabel: true,
+          top: "10%",
+          left: "0",
+          right: "5%",
+          bottom: "12%",
+        },
+        title: {
+          left: "center",
+          text: "点检频率",
+        },
+        toolbox: {
+          feature: {
+            dataZoom: {
+              yAxisIndex: "none",
+            },
+            restore: {},
+            saveAsImage: {},
+          },
+        },
+        xAxis: {
+          type: "time",
+          boundaryGap: false,
+        },
+        yAxis: {
+          type: "value",
+          boundaryGap: [0, "100%"],
+        },
+        dataZoom: [
+          {
+            type: "inside",
+            start: 0,
+            end: 24,
+          },
+          {
+            start: 0,
+            end: 24,
+          },
+        ],
+        series: [
+          {
+            name: "点检次数",
+            type: "line",
+            smooth: true,
+            symbol: "none",
+            areaStyle: {},
+            data: data,
+          },
+        ],
+      };
+
+      option && myChart.setOption(option);
     },
   },
 };
@@ -199,23 +357,13 @@ export default {
   min-height: 100vh;
   background-color: #4c9ae9;
 }
-
-footer {
-  width: 100%;
-  height: 50px;
-
-  line-height: 50px;
-  text-align: center;
-  background: rgba(0, 0, 0, 0.4);
-  color: lightgray;
-  font-size: 0.5rem;
-}
 header {
   width: 100%;
   height: 90px;
-  background: rgba(0, 0, 0, 0.05);
+  /* background: rgba(0, 0, 0, 0.05); */
   color: #fff;
-  box-shadow: 0px 0px 10px rgb(157, 191, 207);
+  box-shadow: 0px 0px 10px black;
+  z-index: 999;
 }
 header h1 {
   display: inline-block;
@@ -244,7 +392,24 @@ header h1 {
 }
 .test-body {
   flex: 1;
-  background-color: rgb(28, 190, 136);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+}
+
+.test-body-left {
+  width: 60%;
+  height: 700px;
+}
+.test-body-right {
+  width: 40%;
+  height: 700px;
+}
+#test-chart {
+  width: 650px;
+  height: 520px;
+  padding-top: 120px;
 }
 .test-search {
   display: flex;
@@ -253,7 +418,7 @@ header h1 {
   height: 100px;
 }
 .test-search-item {
-  padding: 0 30px;
+  padding: 0 50px;
 }
 .test-search-item h2 {
   padding: 10px 0;
@@ -263,6 +428,17 @@ header h1 {
   line-height: 100px;
 }
 .test-table .el-table {
-  margin-left: 30px;
+  margin-left: 60px;
+  font-size: 16px;
+}
+footer {
+  width: 100%;
+  height: 50px;
+
+  line-height: 50px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: lightgray;
+  font-size: 15px;
 }
 </style>

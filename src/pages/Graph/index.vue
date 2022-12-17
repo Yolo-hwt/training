@@ -1,6 +1,13 @@
 <template>
   <div class="graph-container">
     <header>
+      <i
+        class="iconfont graph-icon"
+        :class="{
+          'icon-jiankong1': monitorobj.monitorIsActive,
+          'icon-locus-full': traceobj.traceIsActive,
+        }"
+      ></i>
       <h1>{{ curPageTitle }}</h1>
       <div class="graph-nav">
         <a
@@ -95,7 +102,7 @@ export default {
   display: inline-block;
   width: 50%;
   line-height: 90px;
-  padding-left: 30px;
+  padding-left: 10px;
   letter-spacing: 0.5em;
   font-size: 40px;
   text-shadow: 4px 4px 6px black;
@@ -109,6 +116,16 @@ export default {
 
 .graph-menu-view {
   flex: 1;
+}
+.graph-icon {
+  /* line-height: 90px;
+  text-align: center; */
+  display: inline-block;
+  font-size: 60px;
+  color: #fff;
+  margin: auto 0;
+  padding-left: 30px;
+  padding-right: 30px;
 }
 .graph-nav {
   float: right;
@@ -144,9 +161,10 @@ export default {
 header {
   width: 100%;
   height: 90px;
-  background: rgba(0, 0, 0, 0.05);
+  /* background: rgba(0, 0, 0, 0.05); */
   color: #fff;
-  box-shadow: 0px 0px 10px rgb(157, 191, 207);
+  box-shadow: 0px 0px 10px black;
+  z-index: 999;
 }
 
 footer {
@@ -157,6 +175,6 @@ footer {
   text-align: center;
   background: rgba(0, 0, 0, 0.4);
   color: lightgray;
-  font-size: 0.5rem;
+  font-size: 15px;
 }
 </style>

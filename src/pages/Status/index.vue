@@ -13,52 +13,59 @@
       </div>
     </header>
     <div class="status-body">
-      <div class="status-search">
-        <div class="status-search-item">
-          <h2>设备选择</h2>
-          <el-select v-model="equipValue" multiple placeholder="请选择">
-            <el-option
-              v-for="item in equipOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+      <div class="status-body-left">
+        <div class="status-search">
+          <div class="status-search-item">
+            <h2>设备选择</h2>
+            <el-select v-model="equipValue" multiple placeholder="请选择">
+              <el-option
+                v-for="item in equipOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </div>
+          <div class="status-search-item">
+            <h2>日期选择</h2>
+            <el-date-picker
+              v-model="timeValue"
+              type="daterange"
+              align="right"
+              unlink-panels
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :picker-options="pickerOptions"
             >
-            </el-option>
-          </el-select>
+            </el-date-picker>
+          </div>
+          <div class="status-search-item status-search-btn">
+            <el-button type="primary" round class="status-el-btn"
+              >搜索</el-button
+            >
+          </div>
         </div>
-        <div class="status-search-item">
-          <h2>日期选择</h2>
-          <el-date-picker
-            v-model="timeValue"
-            type="daterange"
-            align="right"
-            unlink-panels
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            :picker-options="pickerOptions"
-          >
-          </el-date-picker>
-        </div>
-        <div class="status-search-item status-search-btn">
-          <el-button type="primary" round class="status-el-btn">搜索</el-button>
+        <div class="status-table">
+          <el-table :data="tableData" style="width: 85%" height="520">
+            <el-table-column fixed prop="date" label="日期" width="150">
+            </el-table-column>
+            <el-table-column prop="name" label="姓名" width="120">
+            </el-table-column>
+            <el-table-column prop="province" label="省份" width="120">
+            </el-table-column>
+            <el-table-column prop="city" label="市区" width="120">
+            </el-table-column>
+            <el-table-column prop="address" label="地址" width="300">
+            </el-table-column>
+            <el-table-column prop="zip" label="邮编" width="120">
+            </el-table-column>
+          </el-table>
         </div>
       </div>
-      <div class="status-table">
-        <el-table :data="tableData" style="width: 85%" height="580">
-          <el-table-column fixed prop="date" label="日期" width="150">
-          </el-table-column>
-          <el-table-column prop="name" label="姓名" width="120">
-          </el-table-column>
-          <el-table-column prop="province" label="省份" width="120">
-          </el-table-column>
-          <el-table-column prop="city" label="市区" width="120">
-          </el-table-column>
-          <el-table-column prop="address" label="地址" width="300">
-          </el-table-column>
-          <el-table-column prop="zip" label="邮编" width="120">
-          </el-table-column>
-        </el-table>
+      <div class="status-body-right">
+        <div id="status-chart"></div>
       </div>
     </div>
     <footer>Copyright 2022 by hwt v1.0</footer>
@@ -66,6 +73,25 @@
 </template>
 
 <script>
+//按需引入echarts饼状图
+import * as echarts from "echarts/core";
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+} from "echarts/components";
+import { PieChart } from "echarts/charts";
+import { LabelLayout } from "echarts/features";
+import { CanvasRenderer } from "echarts/renderers";
+
+echarts.use([
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  PieChart,
+  CanvasRenderer,
+  LabelLayout,
+]);
 export default {
   data() {
     return {
@@ -177,7 +203,63 @@ export default {
           zip: 200333,
         },
         {
+          date: "2016-05-03",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
           date: "2016-05-07",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          province: "上海",
+          city: "普陀区",
+          address: "上海市普陀区金沙江路 1518 弄",
+          zip: 200333,
+        },
+        {
+          date: "2016-05-01",
           name: "王小虎",
           province: "上海",
           city: "普陀区",
@@ -187,10 +269,61 @@ export default {
       ],
     };
   },
+  mounted() {
+    this.initPieChart();
+  },
   methods: {
     //返回主页
     backToHomePage() {
       this.$router.push("/home");
+    },
+    //初始化ehcarts表格
+    initPieChart() {
+      var chartDom = document.getElementById("status-chart");
+      var myChart = echarts.init(chartDom);
+      var option;
+
+      option = {
+        title: {
+          text: "设备状态分布",
+          subtext: "Type Data",
+          left: "center",
+          show: true,
+          textStyle: {
+            fontSize: "24px",
+          },
+        },
+        tooltip: {
+          trigger: "item",
+        },
+        legend: {
+          orient: "vertical",
+          left: "left",
+        },
+        series: [
+          {
+            name: "Access From",
+            type: "pie",
+            radius: "50%",
+            data: [
+              { value: 1048, name: "Search Engine" },
+              { value: 735, name: "Direct" },
+              { value: 580, name: "Email" },
+              { value: 484, name: "Union Ads" },
+              { value: 300, name: "Video Ads" },
+            ],
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: "rgba(0, 0, 0, 0.5)",
+              },
+            },
+          },
+        ],
+      };
+
+      option && myChart.setOption(option);
     },
   },
 };
@@ -207,7 +340,23 @@ export default {
 
 .status-body {
   flex: 1;
-  background-color: rgb(28, 190, 136);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+}
+.status-body-left {
+  width: 65%;
+  height: 700px;
+}
+.status-body-right {
+  width: 35%;
+  height: 700px;
+}
+#status-chart {
+  width: 600px;
+  height: 600px;
+  padding-top: 120px;
 }
 footer {
   width: 100%;
@@ -217,14 +366,15 @@ footer {
   text-align: center;
   background: rgba(0, 0, 0, 0.4);
   color: lightgray;
-  font-size: 0.5rem;
+  font-size: 15px;
 }
 header {
   width: 100%;
   height: 90px;
-  background: rgba(0, 0, 0, 0.05);
+  /* background: rgba(0, 0, 0, 0.05); */
   color: #fff;
-  box-shadow: 0px 0px 10px rgb(157, 191, 207);
+  box-shadow: 0px 0px 10px black;
+  z-index: 999;
 }
 header h1 {
   display: inline-block;
@@ -256,7 +406,7 @@ header h1 {
   height: 100px;
 }
 .status-search-item {
-  padding: 0 30px;
+  padding: 0 50px;
 }
 .status-search-item h2 {
   padding: 10px 0;
@@ -266,6 +416,7 @@ header h1 {
   line-height: 100px;
 }
 .status-table .el-table {
-  margin-left: 30px;
+  margin-left: 50px;
+  font-size: 16px;
 }
 </style>

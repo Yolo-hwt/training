@@ -1,6 +1,10 @@
 <template>
   <div class="home-page">
-    <header><h1>港口库场流动机械运行监控系统</h1></header>
+    <header>
+      <i class="iconfont icon-caozuoxitong home-icon"></i>
+      <!-- <i class="iconfont icon-xitong1 home-icon"></i> -->
+      <h1>港口库场流动机械运行监控系统</h1>
+    </header>
     <!-- <img class="home-bg" src="../../assets/homebg.jpg" alt="主页背景" /> -->
     <div class="wrapper">
       <div class="cols home-page-cols">
@@ -13,9 +17,7 @@
           <div class="container" @click="routeToMenu(index)">
             <div
               class="front"
-              :style="{
-                background: 'pink',
-              }"
+              :style="{ 'background-image': 'url(' + item.pic + ')' }"
             >
               <!-- :style="{ 'background-image': 'url(' + item.pic + ')' }" -->
               <div class="inner">
@@ -43,13 +45,35 @@ export default {
   data() {
     return {
       menuList: [
-        { name: "实时监控", desc: "实时监测设备位置信息", target: "/graph" },
-        { name: "点检记录", desc: "设备点检记录列表", target: "/test" },
-        { name: "状态管理", desc: "设备状态管理中心", target: "/status" },
+        {
+          name: "实时监控",
+          desc: "实时监测设备位置信息",
+          target: "/graph",
+          // pic: "../../assets/monitor.png",
+          pic: require("../../assets/monitor.png"),
+        },
+        {
+          name: "点检记录",
+          desc: "设备点检记录列表",
+          target: "/test",
+          // pic: "../../assets/record.png",
+          pic: require("../../assets/record.png"),
+        },
+        {
+          name: "状态管理",
+          desc: "设备状态管理中心",
+          target: "/status",
+          // pic: "../../assets/status.png",
+          pic: require("@/assets/status.png"),
+        },
       ],
     };
   },
   methods: {
+    getLocalPicByName(picnme, type = "png") {
+      return require("../../assets/" + picnme + "." + type);
+      // return require(picnme);
+    },
     routeToMenu(index) {
       this.$router.push(this.menuList[index].target);
     },
@@ -72,7 +96,15 @@ export default {
   background-image: url("../../assets/homebg.jpg");
   background-size: cover;
 }
+.home-icon {
+  font-size: 45px;
+  padding-right: 20px;
+  padding-top: 5px;
+}
 header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 90px;
   position: absolute;
@@ -98,7 +130,7 @@ footer {
   text-align: center;
   background: rgba(0, 0, 0, 0.5);
   color: lightgray;
-  font-size: 0.5rem;
+  font-size: 15px;
 }
 .wrapper {
   /* width: 90%; */
@@ -195,7 +227,7 @@ footer {
   left: 0;
   width: 100%;
   letter-spacing: 1pt;
-  font-size: 13pt;
+  font-size: 16pt;
   font-weight: 400;
 }
 
@@ -215,7 +247,9 @@ footer {
   perspective: inherit;
   z-index: 2;
 }
-
+.back :hover {
+  color: #1062b5;
+}
 .container .back {
   -webkit-transform: rotateY(180deg);
   transform: rotateY(180deg);
