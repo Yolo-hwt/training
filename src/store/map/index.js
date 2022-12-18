@@ -1,3 +1,11 @@
+import {
+    GetAllEquipInfo,
+    GetEquipInfoById,
+    GetAllTargetPlaceInfo,
+    AddEquipWorkRecord,
+    GetEquipTraceByIdAndTime,
+    GetDevsTotalWorkTime,
+} from "@/api"
 const state = {
     mapConfig: {
         //地图缩放级别
@@ -102,26 +110,129 @@ const state = {
                 },
             },
         ],
-    }
+    },
+    equipOptions: [
+        {
+            equipId: 1,
+            deviceName: "墨子一号",
+            location: 1,
+            date: "2022.12.17",
+            totalWOrkTime: "116",
+            status: "空闲",
+        },
+        {
+            equipId: 2,
+            deviceName: "墨子二号",
+            location: 2,
+            date: "2022.12.17",
+            totalWOrkTime: "100",
+            status: "作业中",
+        },
+        {
+            equipId: 3,
+            deviceName: "墨子三号",
+            location: 3,
+            date: "2022.12.17",
+            totalWOrkTime: "200",
+            status: "维修中",
+        },
+        {
+            equipId: 4,
+            deviceName: "墨子四号",
+            location: 4,
+            date: "2022.12.17",
+            totalWOrkTime: "150",
+            status: "空闲",
+        },
+        {
+            equipId: 5,
+            deviceName: "墨子五号",
+            location: 5,
+            date: "2022.12.17",
+            totalWOrkTime: "100",
+            status: "空闲",
+        },
+    ],
 };
 const mutations = {
-
+    ALLEQUIPINFO(state, infos) {
+        state.equipOptions = infos;
+    },
+    EQUIPINFO(state, info) {
+        for (const { equip, index } of state.equipOptions) {
+            if (equip.equipId === info.equipId) {
+                state.equipOptions[index] = info;
+                break;
+            }
+        }
+    },
+    ALLTARGETINFO(state, info) {
+        state.mapConfig.mapSignList = info;
+    }
 };
 const actions = {
-    //用户登录
-    // async adminLogin({ commit }, adminInfo = {}) {
-    //     let result = await AdminLoginIn(adminInfo);
-    //     if (result.code == 200) {
-    //         commit('ADMINLOGIN', result.data.userInfo);
-    //         return 'ok';
-    //     } else {
-    //         return Promise.reject(new Error('failed'))
-    //     }
-    // },
-
+    //获取所有设备信息
+    async getAllEuipInfo({ commit }) {
+        let result = await GetAllEquipInfo();
+        if (result.code == 200) {
+            commit('ALLEQUIPINFO', result.data);
+            return 'ok';
+        } else {
+            return Promise.reject(new Error('failed'))
+        }
+    },
+    //根据id获取单个设备信息
+    async getEquipInfoById({ commit }, equipIdobj = {}) {
+        let result = await GetEquipInfoById(equipIdobj);
+        if (result.code == 200) {
+            commit('EQUIPINFO', result.data);
+            return 'ok';
+        } else {
+            return Promise.reject(new Error('failed'))
+        }
+    },
+    //获取所有目的地信息
+    async getAllTargetInfo({ commit }) {
+        let result = await GetAllTargetPlaceInfo();
+        if (result.code == 200) {
+            commit('ALLTARGETINFO', result.data);
+            return 'ok';
+        } else {
+            return Promise.reject(new Error('failed'))
+        }
+    },
+    //添加一条作业记录
+    async addEquipWorkRecord({ commit }, workinfo = {}) {
+        let result = await AddEquipWorkRecord(workinfo);
+        if (result.code == 200) {
+            return 'ok';
+        } else {
+            return Promise.reject(new Error('failed'))
+        }
+    },
+    //根据设备id和日期获取历史轨迹
+    async getTraceByEidAndDate({ commit }, equipInfo = {}) {
+        let res = await GetEquipTraceByIdAndTime(equipInfo);
+        if (res.code == 200) {
+            return res.data;
+        } else {
+            return Promise.reject(new Error('failed'))
+        }
+    },
+    //获取设备工时
+    async getAllDeviceWorkTIme({ commit }) {
+        let res = await GetDevsTotalWorkTime();
+        if (res.code == 200) {
+            return res.data;
+        } else {
+            return Promise.reject(new Error('failed'))
+        }
+    }
 };
 const getters = {
     mapConfigGetter: (state) => state.mapConfig,
+    mapSignListGetter: (state) => state.mapConfig.mapSignList,
+    equipOptionsGetter: (state) => state.equipOptions,
 };
 export default {
     state,

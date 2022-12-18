@@ -47,19 +47,27 @@
             >
           </div>
         </div>
+        <div class="add-record-data"></div>
         <div class="status-table">
-          <el-table :data="tableData" style="width: 85%" height="520">
-            <el-table-column fixed prop="date" label="日期" width="150">
+          <el-table
+            :data="deviceTestData"
+            stripe
+            style="width: 85%"
+            height="520"
+          >
+            <el-table-column fixed prop="recordId" label="记录id" width="150">
             </el-table-column>
-            <el-table-column prop="name" label="姓名" width="120">
+            <el-table-column prop="equipId" label="设备id" width="120">
             </el-table-column>
-            <el-table-column prop="province" label="省份" width="120">
+            <el-table-column prop="deviceName" label="设备名" width="120">
             </el-table-column>
-            <el-table-column prop="city" label="市区" width="120">
+            <el-table-column prop="checkPerson" label="检修工" width="120">
             </el-table-column>
-            <el-table-column prop="address" label="地址" width="300">
+            <el-table-column prop="checkDate" label="检修日期" width="300">
             </el-table-column>
-            <el-table-column prop="zip" label="邮编" width="120">
+            <el-table-column prop="checkResult" label="结果" width="120">
+            </el-table-column>
+            <el-table-column prop="explaination" label="说明" width="120">
             </el-table-column>
           </el-table>
         </div>
@@ -153,118 +161,15 @@ export default {
       },
       timeValue: "",
       //表格数据
-      tableData: [
+      deviceTestData: [
         {
-          date: "2016-05-03",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-08",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-06",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-07",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
       ],
     };

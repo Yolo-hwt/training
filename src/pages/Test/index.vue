@@ -17,12 +17,13 @@
         <div class="test-search">
           <div class="test-search-item">
             <h2>设备选择</h2>
-            <el-select v-model="equipValue" multiple placeholder="请选择">
+            <el-select v-model="equipValue" placeholder="请选择">
               <el-option
                 v-for="item in equipOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                :key="item.equipId"
+                :label="item.deviceName"
+                :value="item.equipId"
+                :disabled="item.disabled"
               >
               </el-option>
             </el-select>
@@ -41,20 +42,65 @@
           <div class="test-search-btn test-search-item">
             <el-button type="primary" round class="test-el-btn">搜索</el-button>
           </div>
+          <div class="test-search-btn test-search-item">
+            <el-button
+              type="primary"
+              round
+              class="test-el-btn"
+              @click="addTestRecord()"
+              >添加记录</el-button
+            >
+          </div>
+        </div>
+        <div class="add-record-data" v-if="isAddRecord">
+          <h4>点检设备</h4>
+          <el-select v-model="addRecordData.equipId" placeholder="设备">
+            <el-option
+              v-for="item in equipOptions"
+              :key="item.equipId"
+              :label="item.deviceName"
+              :value="item.equipId"
+              :disabled="item.disabled"
+            >
+            </el-option>
+          </el-select>
         </div>
         <div class="test-table">
-          <el-table :data="tableData" stripe style="width: 85%" height="520">
-            <el-table-column fixed prop="date" label="日期" width="150">
+          <el-table
+            :data="deviceTestData"
+            stripe
+            style="width: 85%"
+            height="520"
+          >
+            <el-table-column fixed prop="recordId" label="记录id" width="100">
             </el-table-column>
-            <el-table-column prop="name" label="姓名" width="120">
+            <el-table-column prop="equipId" label="设备id" width="100">
             </el-table-column>
-            <el-table-column prop="province" label="省份" width="120">
+            <el-table-column prop="deviceName" label="设备名" width="120">
             </el-table-column>
-            <el-table-column prop="city" label="市区" width="120">
+            <el-table-column prop="checkPerson" label="检修工" width="120">
             </el-table-column>
-            <el-table-column prop="address" label="地址" width="300">
+            <el-table-column prop="checkDate" label="检修日期" width="120">
             </el-table-column>
-            <el-table-column prop="zip" label="邮编" width="120">
+            <el-table-column prop="checkResult" label="结果" width="120">
+            </el-table-column>
+            <el-table-column prop="explaination" label="说明" width="120">
+            </el-table-column>
+            <el-table-column fixed="right" label="操作" width="100">
+              <template slot-scope="scope">
+                <el-button
+                  v-if="scope.row.checkResult == deviceError"
+                  @click="handleRepairClick(scope.row)"
+                  type="danger"
+                  >报修</el-button
+                >
+                <el-button
+                  v-if="scope.row.checkResult !== deviceError"
+                  @click="handleViewClick(scope.row)"
+                  type="primary"
+                  >查看</el-button
+                >
+              </template>
             </el-table-column>
           </el-table>
         </div>
@@ -68,6 +114,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import * as echarts from "echarts/core";
 import {
   TitleComponent,
@@ -93,29 +140,6 @@ echarts.use([
 export default {
   data() {
     return {
-      //设备选项
-      equipOptions: [
-        {
-          value: "选项1",
-          label: "黄金糕",
-        },
-        {
-          value: "选项2",
-          label: "双皮奶",
-        },
-        {
-          value: "选项3",
-          label: "蚵仔煎",
-        },
-        {
-          value: "选项4",
-          label: "龙须面",
-        },
-        {
-          value: "选项5",
-          label: "北京烤鸭",
-        },
-      ],
       equipValue: [],
       //日期选项
       pickerOptions: {
@@ -148,125 +172,129 @@ export default {
         ],
       },
       timeValue: "",
+      deviceError: "故障",
+      //是否添加表格数据
+      isAddRecord: true,
+      //表格添加数据
+      addRecordData: {
+        equipId: "",
+        deviceName: "",
+        checkPerson: "",
+        checkDate: "",
+        checkResult: "",
+        explaination: "",
+      },
       //表格数据
-      tableData: [
+      deviceTestData: [
         {
-          date: "2016-05-03",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
         {
-          date: "2016-05-02",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "故障",
+          explaination: "设备各项数据正常",
         },
         {
-          date: "2016-05-04",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
         {
-          date: "2016-05-01",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
         {
-          date: "2016-05-08",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
         {
-          date: "2016-05-06",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
         {
-          date: "2016-05-07",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
         {
-          date: "2016-05-03",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
         {
-          date: "2016-05-02",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
         {
-          date: "2016-05-04",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
         {
-          date: "2016-05-01",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-08",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-06",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-07",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
+          recordId: 1,
+          equipId: 1,
+          deviceName: "设备1",
+          checkPerson: "小王",
+          checkDate: "2022-12-19",
+          checkResult: "正常",
+          explaination: "设备各项数据正常",
         },
       ],
     };
   },
   mounted() {
     this.initLineChart();
+  },
+  computed: {
+    ...mapGetters({
+      equipOptions: "equipOptionsGetter",
+    }),
   },
   methods: {
     //返回主页
@@ -345,6 +373,57 @@ export default {
 
       option && myChart.setOption(option);
     },
+    //报修按钮
+    async handleRepairClick(data) {
+      let errorobj = {
+        equipId: data.equipId,
+      };
+      let res = null;
+      try {
+        res = await this.$store.dispatch("sendDeviceError", errorobj);
+      } catch (error) {
+        console.log(error);
+      }
+      if (res == "ok") {
+        alert("上报错误成功！等待检修");
+      }
+    },
+    //查看按钮
+    handleViewClick(data) {
+      const {
+        recordId,
+        equipId,
+        deviceName,
+        checkPerson,
+        checkDate,
+        checkResult,
+        explaination,
+      } = data;
+      alert(
+        "记录编号：" +
+          recordId +
+          "\n" +
+          "设备ID：" +
+          equipId +
+          "\n" +
+          "设备名称：" +
+          deviceName +
+          "\n" +
+          "检测员工：" +
+          checkPerson +
+          "\n" +
+          "检测日期：" +
+          checkDate +
+          "\n" +
+          "检测结果：" +
+          checkResult +
+          "\n" +
+          "检测说明：" +
+          explaination +
+          "\n"
+      );
+    },
+    addTestRecord() {},
   },
 };
 </script>

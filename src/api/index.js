@@ -29,7 +29,7 @@ export const GetEquipTyepeNum = () => requests({ url: "/getEquipTyepeNum", metho
 //添加设备作业记录到数据库
 export const AddEquipWorkRecord = (workobj) => requests({ url: "/addEquipWorkRecord", data: workobj, method: "post" });
 //获取各台设备总运行时长
-export const getDevsTotalWorkTime = () => requests({ url: "/getDevsTotalWorkTime", method: "get" });
+export const GetDevsTotalWorkTime = () => requests({ url: "/getDevsTotalWorkTime", method: "get" });
 //获取指定id设备的总运行时长
 export const GetDevTotalWorkTimeById = (equipIdobj) => requests({ url: "/getDevTotalWorkTimeById", data: equipIdobj, method: "post" });
 
@@ -49,9 +49,9 @@ export const getEquipCheckListByIdAndDate = (recordobj) => requests({ url: "/get
 //获取所有设备的状态记录列表
 export const getAllEquipStatusList = () => requests({ url: "/getAllEquipStatusList", method: "get" });
 //上报设备故障，在数据库中插入点检记录，状态变更记录，更改设备当前状态
-export const sendEquipErrorById = (recordobj) => requests({ url: "/sendEquipErrorById", data: recordobj, method: "post" });
+export const SendEquipErrorById = (recordobj) => requests({ url: "/sendEquipErrorById", data: recordobj, method: "post" });
 //插入一条点检记录
-export const sendEquipCheckRecord = (recordobj) => requests({ url: "/sendEquipCheckRecord", data: recordobj, method: "post" });
+export const SendEquipCheckRecord = (recordobj) => requests({ url: "/sendEquipCheckRecord", data: recordobj, method: "post" });
 
 /**
  * 状态管理

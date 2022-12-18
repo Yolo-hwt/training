@@ -10,9 +10,9 @@
           <el-select v-model="equipValue" placeholder="选择设备">
             <el-option
               v-for="item in equipOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              :key="item.equipId"
+              :label="item.deviceName"
+              :value="item.equipId"
               :disabled="item.disabled"
             >
             </el-option>
@@ -31,15 +31,32 @@
         </div>
 
         <div class="opera-item">
+          <span>轨迹列表</span>
+          <el-select v-model="traceValue" placeholder="选择轨迹">
+            <el-option
+              v-for="(item, index) in traceHistory"
+              :key="index + 1"
+              :label="`码头${item.source}-${item.target}`"
+              :value="index + 1"
+            >
+            </el-option>
+          </el-select>
+        </div>
+        <div class="opera-item">
           <el-button
             type="primary"
             round
             class="trace-el-btn"
-            @click="removeOverLay(mapPolyLine)"
-            >查看路径</el-button
+            @click="getTraceHistoryByEidAndDate()"
+            >查询轨迹</el-button
           >
-          <el-button type="primary" round class="trace-el-btn"
-            >发布指令</el-button
+          <el-button
+            type="primary"
+            round
+            class="trace-el-btn"
+            :disabled="traceHistory.length == 0"
+            @click="initAniByTrace()"
+            >{{ pathViewOrClose ? "路径回放" : "清除路径" }}</el-button
           >
         </div>
       </div>
@@ -49,6 +66,15 @@
 
 <script>
 import { mapGetters } from "vuex";
+import {
+  CreateBaiduMap,
+  AddMapControler,
+  AddMapPoint,
+  AddMapLable,
+  PathPlayBackAnime,
+  AddMapLine,
+} from "@/utils/BaiduMap";
+import { FormatDate } from "@/utils/DateFormat";
 import * as echarts from "echarts/core";
 import {
   TitleComponent,
@@ -70,31 +96,35 @@ echarts.use([
 export default {
   data() {
     return {
-      equipOptions: [
-        {
-          value: "选项1",
-          label: "黄金糕",
-        },
-        {
-          value: "选项2",
-          label: "双皮奶",
-          disabled: true,
-        },
-        {
-          value: "选项3",
-          label: "蚵仔煎",
-        },
-        {
-          value: "选项4",
-          label: "龙须面",
-        },
-        {
-          value: "选项5",
-          label: "北京烤鸭",
-        },
-      ],
       equipValue: "",
-      workTime: 0,
+      workTime: [],
+      //查询到的历史轨迹列表
+      traceHistory: [
+        {
+          source: 1,
+          target: 4,
+          workTime: 10,
+        },
+        { source: 4, target: 8, workTime: 10 },
+      ],
+      //路径选择
+      traceValue: "",
+      //路径回放or清除路径
+      pathViewOrClose: true,
+      //echarts数据
+      deviceWorkTime: [
+        ["time", "amount", "devicename"],
+        [89.3, 0, "Matcha Latte"],
+        [57.1, 0, "Milk Tea"],
+        [74.4, 0, "Cheese Cocoa"],
+        [50.1, 0, "Cheese Brownie"],
+        [89.7, 0, "Matcha Cocoa"],
+        [68.1, 0, "Tea"],
+        [19.6, 0, "Orange Juice"],
+        [10.6, 0, "Lemon Juice"],
+        [32.7, 0, "Walnut Brownie"],
+      ],
+      deviceMaxWorkTime: 100,
       //echarts坐标轴刻度label字体
       chartAxisLableFontSize: "13px",
       //echarts标头title字体
@@ -105,28 +135,29 @@ export default {
       chartScaleWidth: "25px",
       //地图实例
       mapInstance: null,
+      //地图dom
+      mapTargetDom: "trace-map",
       //路径动画
       mapTrackAni: null,
       //标注图片
       mapSignIcon: require("../../assets/port.png"),
       //动画路径
       mapPolyLine: null,
+      //
     };
   },
   computed: {
     ...mapGetters({
       mapConfig: "mapConfigGetter",
+      equipOptions: "equipOptionsGetter",
     }),
   },
   mounted() {
     this.initMap();
     this.initPieChart();
   },
+  //路由退出之前优先取消动画
   beforeRouteLeave(to, from, next) {
-    if (this.mapTrackAni) {
-      console.log("cancel animation");
-      this.mapTrackAni.cancel();
-    }
     this.mapTrackAni = null;
     next();
   },
@@ -134,166 +165,161 @@ export default {
     //初始化百度地图
     async initMap() {
       //初始化配置
-      await this.createMap();
-      //添加地图控制类
-      await this.addMapControler();
-      //创建地图标点
-      await this.addMapPoint();
-      //添加lable
-      await this.addMapLable();
-      //动画
-      this.pathPlayBackAnime(this.mapConfig.mapSignList);
-    },
-    //创建地图
-    async createMap() {
-      // 创建Map实例
-      this.mapInstance = new BMapGL.Map("trace-map");
-      // 初始化地图,设置中心点坐标和地图级别
-      this.mapInstance.centerAndZoom(
-        new BMapGL.Point(
-          this.mapConfig.mapCenterPoint.longitude,
-          this.mapConfig.mapCenterPoint.dimension
-        ),
-        this.mapConfig.mapZoomLevel
-      );
-      this.mapInstance.enableScrollWheelZoom(true); //开启鼠标滚轮缩放
-      this.mapInstance.setHeading(this.mapConfig.mapHeaing); //设置地图旋转角度
-      this.mapInstance.setTilt(this.mapConfig.mapTilt); //设置地图的倾斜角度
-      //可以试着在地图区域按住鼠标右键进行拖动，地图的视角和旋转角度会随之改变
-    },
-    //添加控件
-    async addMapControler() {
-      /**
-       * 添加控件
-       */
-      var scaleCtrl = new BMapGL.ScaleControl(); // 添加比例尺控件
-      this.mapInstance.addControl(scaleCtrl);
-      var zoomCtrl = new BMapGL.ZoomControl(); // 添加缩放控件
-      this.mapInstance.addControl(zoomCtrl);
-      // var cityCtrl = new BMapGL.CityListControl(); // 添加城市列表控件
-      // map.addControl(cityCtrl);
-    },
-    //添加标点
-    async addMapPoint() {
-      var that = this;
-      for (const sign of this.mapConfig.mapSignList) {
-        // console.log(sign);
-        let point = new BMapGL.Point(sign.longitude, sign.dimension);
-
-        //标注图层
-        // console.log(that.mapSignIcon);
-        let myIcon = new BMapGL.Icon(
-          that.mapSignIcon,
-          new BMapGL.Size(70, 80),
-          {
-            //   // 指定定位位置。
-            //   // 当标注显示在地图上时，其所指向的地理位置距离图标左上
-            //   // 角各偏移10像素和25像素。您可以看到在本例中该位置即是
-            //   // 图标中央下端的尖角位置。
-            anchor: new BMapGL.Size(5, 52),
-            //   // 设置图片偏移。
-            //   // 当您需要从一幅较大的图片中截取某部分作为标注图标时，您
-            //   // 需要指定大图的偏移位置，此做法与css sprites技术类似。
-            //   imageOffset: new BMapGL.Size(0, 0 - 25), // 设置图片偏移
-          }
-        );
-        // 创建标注对象并添加到地图
-        let marker = new BMapGL.Marker(point, { icon: myIcon });
-        this.mapInstance.addOverlay(marker); // 将标注添加到地图中
-
-        //提示信息
-        let infoWindow = new BMapGL.InfoWindow();
-        let title = "sid:" + sign.sid;
-        infoWindow.setTitle("<h2>" + title + "</h2>");
-
-        let text = sign.longitude + "," + sign.dimension;
-        infoWindow.setContent("<h3>码头位置:(" + text + ")</h3>");
-        //地图标点点击事件
-        marker.addEventListener("click", () => {
-          that.mapInstance.openInfoWindow(infoWindow, point); // 打开信息窗口
-        });
-      }
-    },
-    //添加文本标注
-    async addMapLable() {
-      var that = this;
-      for (const sign of this.mapConfig.mapSignList) {
-        // console.log(sign);
-        let point = new BMapGL.Point(sign.longitude, sign.dimension);
-        let content = "<span>码头" + sign.sid + "</span>";
-        let label = new BMapGL.Label(content, {
-          // 创建文本标注
-          position: point,
-          offset: new BMapGL.Size(10, 15),
-        });
-        this.mapInstance.addOverlay(label); // 将标注添加到地图中
-        label.setStyle({
-          // 设置label的样式
-          color: "#000",
-          fontSize: "16px",
-          border: "2px solid #4c9ae9",
-          "border-radius": "10px",
-        });
-      }
-    },
-    //路径回放动画
-    async pathPlayBackAnime(path) {
-      var that = this;
-      var point = [];
-      for (let i = 0; i < path.length; i++) {
-        point.push(new BMapGL.Point(path[i].longitude, path[i].dimension));
-      }
-      this.mapPolyLine = new BMapGL.Polyline(point);
-      this.mapPolyLine.setStrokeColor("#fac858");
-      this.mapPolyLine.setStrokeWeight(10);
-      this.mapTrackAni = new BMapGLLib.TrackAnimation(
+      this.mapInstance = await CreateBaiduMap(
         this.mapInstance,
-        that.mapPolyLine,
-        {
-          overallView: true, // 动画完成后自动调整视野到总览
-          tilt: 0, // 轨迹播放的角度，默认为55
-          duration: 20000, // 动画持续时长，默认为10000，单位ms
-          delay: 3000, // 动画开始的延迟，默认0，单位ms
-        }
+        this.mapTargetDom,
+        this.mapConfig
       );
+      //添加地图控制类
+      await AddMapControler(this.mapInstance);
+      //创建地图标点
+      await AddMapPoint(this.mapInstance, this.mapSignIcon, this.mapConfig);
+      //添加lable
+      await AddMapLable(this.mapInstance, this.mapConfig);
+    },
+    //根据eid获取设备对象
+    getEquipByEid(eid) {
+      let res = {};
+      for (const equip of this.equipOptions) {
+        if (equip.equipId == eid) {
+          res = equip;
+          break;
+        }
+        return res;
+      }
+    },
+    //根据设备id和日期获取历史轨迹
+    async getTraceHistoryByEidAndDate() {
+      if (this.equipValue == "") {
+        alert("请选择设备！");
+        return;
+      }
+      if (this.workTime.length == 0) {
+        alert("请选择日期！");
+        return;
+      }
+      const eid = this.equipValue;
+      const sDate = FormatDate(this.workTime[0]);
+      const eDate = FormatDate(this.workTime[1]);
+
+      // console.log(sDate, eDate);
+      //获取历史轨迹
+      this.traceHistory = await this.$store.dispatch("getTraceByEidAndDate", {
+        equipId: parseInt(eid),
+        startTime: sDate,
+        endTime: eDate,
+      });
+    },
+    //根据码头id获取码头数据对象
+    getWharfBySid(sid) {
+      let ans = {};
+      for (const item of this.mapConfig.mapSignList) {
+        if (sid === item.sid) {
+          ans = item;
+          break;
+        }
+      }
+      return ans;
+    },
+    //根据选择路径初始化回放动画
+    async initAniByTrace() {
+      if (!this.pathViewOrClose) {
+        this.removeOverLay(this.mapPolyLine);
+        this.mapPolyLine = null;
+        this.mapTrackAni = null;
+        this.pathViewOrClose = !this.pathViewOrClose;
+        return;
+      }
+      if (this.traceValue === "") {
+        alert("请选择历史路径！");
+        return;
+      }
+      let tracelist = [];
+      const sourceobj = this.getWharfBySid(
+        this.traceHistory[this.traceValue - 1].source
+      );
+      const targetobj = this.getWharfBySid(
+        this.traceHistory[this.traceValue - 1].target
+      );
+      tracelist.push(sourceobj);
+      tracelist.push(targetobj);
+      // console.log("tracce", tracelist);
+      //动画
+      let res = await PathPlayBackAnime(
+        this.mapInstance,
+        tracelist,
+        "red",
+        3500
+      );
+      this.mapPolyLine = res.polyLine;
+      this.mapTrackAni = res.mapTrackAni;
+      this.traceAniStart();
+      this.pathViewOrClose = !this.pathViewOrClose;
+    },
+    //轨迹动画开始
+    traceAniStart() {
       this.mapTrackAni.start();
+    },
+    //轨迹动画结束
+    traceAniStop() {
+      this.mapTrackAni.cancel();
     },
     //移除覆盖物
     removeOverLay(overlay) {
       this.mapInstance.removeOverlay(overlay);
     },
+    //获取设备工时
+    async getDeviceWorkTime() {
+      //       {
+      // equipId:xx,
+      // totalWorkTime:xx
+      // }
+      var result = [];
+      result.push(["time", "amount", "devicename"]);
+      let timelist = [];
+      try {
+        timelist = await this.$store.dispatch("getAllDeviceWorkTIme");
+      } catch (error) {
+        console.log(error);
+      }
+      if (timelist.length <= 0) {
+        return;
+      }
+      let maxTime = 0;
+      for (const item of timelist) {
+        if (item.totalWorkTime > maxTime) {
+          maxTime = totalWorkTime;
+        }
+        result.push([item.totalWorkTime, 0, "设备" + item.equipId]);
+      }
+      if (maxTime > this.deviceMaxWorkTime) {
+        this.deviceWorkTime = maxTime;
+      }
+      this.deviceWorkTime = result;
+      return result;
+    },
     //初始化echarts图表
-    initPieChart() {
+    async initPieChart() {
+      await this.getDeviceWorkTime();
       var chartDom = document.getElementById("piechart");
       var myChart = echarts.init(chartDom);
       var option;
 
       option = {
         title: {
-          text: "设备公里数",
-          subtext: "Type Data",
+          text: "设备累计工时",
+          subtext: "time Data",
           left: "center",
           textStyle: {
             fontSize: this.chartTitleFontSize,
           },
         },
         dataset: {
-          source: [
-            ["score", "amount", "category"],
-            [89.3, 58212, "Matcha Latte"],
-            [57.1, 78254, "Milk Tea"],
-            [74.4, 41032, "Cheese Cocoa"],
-            [50.1, 12755, "Cheese Brownie"],
-            [89.7, 20145, "Matcha Cocoa"],
-            [68.1, 79146, "Tea"],
-            [19.6, 91852, "Orange Juice"],
-            [10.6, 101852, "Lemon Juice"],
-            [32.7, 20112, "Walnut Brownie"],
-          ],
+          source: this.deviceWorkTime,
         },
-        grid: { containLabel: true, top: "10%", left: "0", bottom: "12%" },
+        grid: { containLabel: true, top: "10%", left: "0", bottom: "14%" },
         xAxis: {
-          name: "km",
+          name: "time",
           axisLabel: {
             fontSize: this.chartAxisLableFontSize,
           },
@@ -307,8 +333,8 @@ export default {
         visualMap: {
           orient: "horizontal",
           left: "center",
-          min: 10,
-          max: 100,
+          min: 1,
+          max: this.deviceMaxWorkTime,
           text: ["High Score", "Low Score"],
           // Map the score column to color
           dimension: 0,
@@ -325,18 +351,14 @@ export default {
             type: "bar",
             encode: {
               // Map the "amount" column to X axis.
-              x: "km",
+              x: "time",
               // Map the "product" column to Y axis
-              y: "category",
+              y: "devicename",
             },
           },
         ],
       };
-
       option && myChart.setOption(option);
-    },
-    workTimeHandleChange(value) {
-      console.log(value);
     },
   },
 };

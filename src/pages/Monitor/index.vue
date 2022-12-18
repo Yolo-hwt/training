@@ -28,19 +28,31 @@
         </div>
         <div class="monitor-info-item">
           <span class="info-item-title">设备状态</span>
-          <span class="info-item-text">{{ curEquipMent.status }}</span>
+          <span
+            class="info-item-text"
+            :class="{
+              'equip-free': curEquipMent.status == '空闲',
+              'equip-work': curEquipMent.status == '作业中',
+              'equip-repair': curEquipMent.status == '维修中',
+            }"
+            >{{ curEquipMent.status }}</span
+          >
         </div>
       </div>
       <div class="monitor-opera">
         <h2>设备调度</h2>
         <div class="opera-item">
           <span>设备</span>
-          <el-select v-model="equipValue" placeholder="选择设备">
+          <el-select
+            v-model="equipValue"
+            placeholder="选择设备"
+            @change="(val) => equipChangeHandle(val)"
+          >
             <el-option
               v-for="item in equipOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              :key="item.equipId"
+              :label="item.deviceName"
+              :value="item.equipId"
               :disabled="item.disabled"
             >
             </el-option>
@@ -51,9 +63,9 @@
           <el-select v-model="siteValue" placeholder="选择目的地">
             <el-option
               v-for="item in siteOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              :key="item.sid"
+              :label="`码头${item.sid}`"
+              :value="item.sid"
               :disabled="item.disabled"
             >
             </el-option>
@@ -63,7 +75,6 @@
           <span>作业时间</span>
           <el-input-number
             v-model="workTime"
-            @change="workTimeHandleChange"
             :min="1"
             :max="1000"
             label="作业时间"
@@ -71,10 +82,18 @@
           <span>min</span>
         </div>
         <div class="opera-item">
-          <el-button type="primary" round class="graph-el-btn"
-            >查看路径</el-button
+          <el-button
+            type="primary"
+            round
+            class="graph-el-btn"
+            @click="mapPredictViewPath()"
+            >{{ pathViewOrClose ? "查看路径" : "清除路径" }}</el-button
           >
-          <el-button type="primary" round class="graph-el-btn"
+          <el-button
+            type="primary"
+            round
+            class="graph-el-btn"
+            @click="releaseOrderToEquip()"
             >发布指令</el-button
           >
         </div>
@@ -85,76 +104,51 @@
 
 <script>
 import { mapGetters } from "vuex";
+import {
+  CreateBaiduMap,
+  AddMapControler,
+  AddMapPoint,
+  AddMapLable,
+  AddSelfMapPoint,
+  AddMapLine,
+} from "@/utils/BaiduMap";
 export default {
   data() {
     return {
       //当前设备
       curEquipMent: {
-        equipId: 111,
+        equipId: 1, //eid
         deviceName: "墨子一号",
-        location: "码头1（111.222.333）",
+        location: 1, //sid
         date: "2022.12.17",
         totalWOrkTime: "116",
-        status: "空闲中",
+        status: "空闲",
       },
-      equipOptions: [
-        {
-          value: "选项1",
-          label: "黄金糕",
-        },
-        {
-          value: "选项2",
-          label: "双皮奶",
-          disabled: true,
-        },
-        {
-          value: "选项3",
-          label: "蚵仔煎",
-        },
-        {
-          value: "选项4",
-          label: "龙须面",
-        },
-        {
-          value: "选项5",
-          label: "北京烤鸭",
-        },
-      ],
+      //设备选项
       equipValue: "",
-      siteOptions: [
-        {
-          value: "选项1",
-          label: "黄金糕",
-        },
-        {
-          value: "选项2",
-          label: "双皮奶",
-          disabled: true,
-        },
-        {
-          value: "选项3",
-          label: "蚵仔煎",
-        },
-        {
-          value: "选项4",
-          label: "龙须面",
-        },
-        {
-          value: "选项5",
-          label: "北京烤鸭",
-        },
-      ],
+      //位置选项
       siteValue: "",
+      //设备工时
       workTime: 0,
+      //路径查看或关闭 true:查看，false:关闭
+      pathViewOrClose: true,
       //地图实例
       mapInstance: null,
+      //地图dom
+      mapTargetDom: "monitor-map",
       //标注图片
       mapSignIcon: require("../../assets/port.png"),
+      //设备覆盖物实例
+      mapEquipInstance: null,
+      //设备折线对象
+      mapLineInstance: null,
     };
   },
   computed: {
     ...mapGetters({
       mapConfig: "mapConfigGetter",
+      siteOptions: "mapSignListGetter",
+      equipOptions: "equipOptionsGetter",
     }),
   },
   mounted() {
@@ -164,106 +158,138 @@ export default {
     //初始化百度地图
     async initMap() {
       //初始化配置
-      await this.createMap();
-      //添加地图控制类
-      await this.addMapControler();
-      //创建地图标点
-      await this.addMapPoint();
-      //添加lable
-      await this.addMapLable();
-    },
-    //创建地图
-    async createMap() {
-      // 创建Map实例
-      this.mapInstance = new BMapGL.Map("monitor-map");
-      // 初始化地图,设置中心点坐标和地图级别
-      this.mapInstance.centerAndZoom(
-        new BMapGL.Point(
-          this.mapConfig.mapCenterPoint.longitude,
-          this.mapConfig.mapCenterPoint.dimension
-        ),
-        this.mapConfig.mapZoomLevel
+      this.mapInstance = await CreateBaiduMap(
+        this.mapInstance,
+        this.mapTargetDom,
+        this.mapConfig
       );
-      this.mapInstance.enableScrollWheelZoom(true); //开启鼠标滚轮缩放
-      this.mapInstance.setHeading(this.mapConfig.mapHeaing); //设置地图旋转角度
-      this.mapInstance.setTilt(this.mapConfig.mapTilt); //设置地图的倾斜角度
-      //可以试着在地图区域按住鼠标右键进行拖动，地图的视角和旋转角度会随之改变
+      //添加地图控制类
+      await AddMapControler(this.mapInstance);
+      //创建地图标点
+      await AddMapPoint(this.mapInstance, this.mapSignIcon, this.mapConfig);
+      //添加lable
+      await AddMapLable(this.mapInstance, this.mapConfig);
     },
-    //添加控件
-    async addMapControler() {
-      /**
-       * 添加控件
-       */
-      var scaleCtrl = new BMapGL.ScaleControl(); // 添加比例尺控件
-      this.mapInstance.addControl(scaleCtrl);
-      var zoomCtrl = new BMapGL.ZoomControl(); // 添加缩放控件
-      this.mapInstance.addControl(zoomCtrl);
-      // var cityCtrl = new BMapGL.CityListControl(); // 添加城市列表控件
-      // map.addControl(cityCtrl);
+    //设备选择变化handle
+    equipChangeHandle(eid) {
+      if (this.curEquipMent.equipId === eid) return;
+      for (const equip of this.equipOptions) {
+        if (equip.equipId === eid) {
+          this.curEquipMent = equip;
+          break;
+        }
+      }
     },
-    //添加标点
-    async addMapPoint() {
-      var that = this;
-      for (const sign of this.mapConfig.mapSignList) {
-        // console.log(sign);
-        let point = new BMapGL.Point(sign.longitude, sign.dimension);
+    //根据码头id获取其对象
+    getWharfBySid(sid) {
+      let res = {};
+      for (const local of this.mapConfig.mapSignList) {
+        if (local.sid === sid) {
+          res = local;
+        }
+      }
+      return res;
+    },
+    //根据设备id获取其对象
+    getEquipByEid(eid) {
+      let res = {};
+      for (const local of this.equipOptions) {
+        if (local.equipId === eid) {
+          res = local;
+        }
+      }
+      return res;
+    },
+    //根据设备id获取码头对象
+    getEquipSiteObjByEid(eid) {
+      let equipobj = this.getEquipByEid(eid);
+      let res = {};
+      for (const local of this.mapConfig.mapSignList) {
+        if (local.sid === equipobj.location) {
+          res = local;
+        }
+      }
+      return res;
+    },
+    //预先查看路径
+    async mapPredictViewPath() {
+      //移除路径
+      if (!this.pathViewOrClose) {
+        this.removeOverLay(this.mapLineInstance);
+        this.mapLineInstance = null;
+        this.pathViewOrClose = !this.pathViewOrClose;
+        return;
+      }
+      //添加路径
+      //设备当前位置对象
+      let source = this.getEquipSiteObjByEid(this.equipValue);
+      //目标位置对象
+      let target = this.getWharfBySid(this.siteValue);
+      if (Object.getOwnPropertyNames(source).length == 0) {
+        alert("请选择设备");
+        return;
+      }
+      if (Object.getOwnPropertyNames(target).length == 0) {
+        alert("请选择目的地");
+        return;
+      }
+      let path = [source, target];
+      this.mapLineInstance = await AddMapLine(path, "red");
+      this.mapInstance.addOverlay(this.mapLineInstance);
+      this.pathViewOrClose = !this.pathViewOrClose;
+      //console.log(source, target);
+    },
+    //向设备发布指令
+    async releaseOrderToEquip() {
+      if (this.curEquipMent.status !== "空闲") {
+        alert("当前设备" + this.curEquipMent.status + "!");
+        return;
+      }
+      //添加路径
+      //设备当前位置
+      let source = this.getEquipSiteObjByEid(this.equipValue);
+      let target = this.getWharfBySid(this.siteValue);
+      let time = this.workTime;
+      if (Object.getOwnPropertyNames(source).length == 0) {
+        alert("请选择设备");
+        return;
+      }
+      if (Object.getOwnPropertyNames(target).length == 0) {
+        alert("请选择目的地");
+        return;
+      }
+      // let path = [source, target];
+      //发布指令
+      let workobj = {
+        equipId: this.curEquipMent.equipId,
+        destination: target.sid,
+        worktime: time,
+      };
 
-        //标注图层
-        // console.log(that.mapSignIcon);
-        let myIcon = new BMapGL.Icon(
-          that.mapSignIcon,
-          new BMapGL.Size(70, 80),
-          {
-            //   // 指定定位位置。
-            //   // 当标注显示在地图上时，其所指向的地理位置距离图标左上
-            //   // 角各偏移10像素和25像素。您可以看到在本例中该位置即是
-            //   // 图标中央下端的尖角位置。
-            anchor: new BMapGL.Size(5, 52),
-            //   // 设置图片偏移。
-            //   // 当您需要从一幅较大的图片中截取某部分作为标注图标时，您
-            //   // 需要指定大图的偏移位置，此做法与css sprites技术类似。
-            //   imageOffset: new BMapGL.Size(0, 0 - 25), // 设置图片偏移
-          }
+      let res = await this.$store.dispatch("addEquipWorkRecord", workobj);
+      if (res == "ok") {
+        alert(
+          "指令已发布\n源地点：码头" +
+            source.sid +
+            "\n目的地：码头" +
+            target.sid +
+            "\n作业时间: " +
+            time +
+            "分钟"
         );
-        // 创建标注对象并添加到地图
-        let marker = new BMapGL.Marker(point, { icon: myIcon });
-        this.mapInstance.addOverlay(marker); // 将标注添加到地图中
-
-        //提示信息
-        let infoWindow = new BMapGL.InfoWindow();
-        let title = "sid:" + sign.sid;
-        infoWindow.setTitle("<h2>" + title + "</h2>");
-
-        let text = sign.longitude + "," + sign.dimension;
-        infoWindow.setContent("<h3>码头位置:(" + text + ")</h3>");
-        //地图标点点击事件
-        marker.addEventListener("click", () => {
-          that.mapInstance.openInfoWindow(infoWindow, point); // 打开信息窗口
+        //发布成功后更新当前设备信息
+        await this.$store.dispatch("getEquipInfoById", {
+          equipId: this.curEquipMent.equipId,
         });
+      } else {
+        alert("指令发布失败");
       }
     },
-    //添加文本标注
-    async addMapLable() {
-      var that = this;
-      for (const sign of this.mapConfig.mapSignList) {
-        // console.log(sign);
-        let point = new BMapGL.Point(sign.longitude, sign.dimension);
-        let content = "<span>码头" + sign.sid + "</span>";
-        let label = new BMapGL.Label(content, {
-          // 创建文本标注
-          position: point,
-          offset: new BMapGL.Size(10, 15),
-        });
-        this.mapInstance.addOverlay(label); // 将标注添加到地图中
-        label.setStyle({
-          // 设置label的样式
-          color: "#000",
-          fontSize: "16px",
-          border: "2px solid #4c9ae9",
-          "border-radius": "10px",
-        });
-      }
+    //移除覆盖物
+    removeOverLay(overlay) {
+      this.mapInstance.removeOverlay(overlay);
     },
+    //
     workTimeHandleChange(value) {
       console.log(value);
     },
@@ -321,5 +347,26 @@ export default {
   display: inline-block;
   padding-right: 30px;
   font-size: 18px;
+}
+.equip-free {
+  color: rgb(76, 154, 233);
+  font-size: 18px;
+  font-weight: 600;
+  border: 1px solid rgb(76, 154, 233);
+  padding: 3px;
+}
+.equip-repair {
+  color: red;
+  font-size: 18px;
+  font-weight: 600;
+  border: 1px solid red;
+  padding: 3px;
+}
+.equip-work {
+  color: green;
+  font-size: 18px;
+  font-weight: 600;
+  border: 1px solid green;
+  padding: 3px;
 }
 </style>
