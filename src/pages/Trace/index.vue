@@ -114,19 +114,16 @@ export default {
       //echarts数据
       deviceWorkTime: [
         ["time", "amount", "devicename"],
-        [89.3, 0, "Matcha Latte"],
-        [57.1, 0, "Milk Tea"],
-        [74.4, 0, "Cheese Cocoa"],
-        [50.1, 0, "Cheese Brownie"],
-        [89.7, 0, "Matcha Cocoa"],
-        [68.1, 0, "Tea"],
-        [19.6, 0, "Orange Juice"],
-        [10.6, 0, "Lemon Juice"],
-        [32.7, 0, "Walnut Brownie"],
+        [89.3, 0, "设备1"],
+        [57.1, 0, "设备2"],
+        [74.4, 0, "设备3"],
+        [50.1, 0, "设备4"],
+        [89.7, 0, "设备5"],
+        [68.1, 0, "设备6"],
       ],
       deviceMaxWorkTime: 100,
       //echarts坐标轴刻度label字体
-      chartAxisLableFontSize: "13px",
+      chartAxisLableFontSize: "15px",
       //echarts标头title字体
       chartTitleFontSize: "24px",
       //echarts标尺字体

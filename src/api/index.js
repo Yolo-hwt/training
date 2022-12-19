@@ -24,8 +24,6 @@ export const GetAllEquipSite = () => requests({ url: "/getAllEquipSite", method:
 export const GetEquipSiteById = (equipIdobj) => requests({ url: "/getEquipSiteById", data: equipIdobj, method: "post" });
 //获取所有目的地信息
 export const GetAllTargetPlaceInfo = () => requests({ url: "/getAllTargetPlaceInfo", method: "get" });
-//获取各种状态下设备的数量
-export const GetEquipTyepeNum = () => requests({ url: "/getEquipTyepeNum", method: "get" });
 //添加设备作业记录到数据库
 export const AddEquipWorkRecord = (workobj) => requests({ url: "/addEquipWorkRecord", data: workobj, method: "post" });
 //获取各台设备总运行时长
@@ -43,11 +41,10 @@ export const GetEquipTraceByIdAndTime = (equipIdobj) => requests({ url: "/getEqu
 //获取所有设备点检记录
 export const GetAllEquipCheckList = () => requests({ url: "/getAllEquipCheckList", method: "get" });
 //获取指定设备的点检记录
-export const getEquipCheckListById = (equipIdobj) => requests({ url: "/getEquipCheckListById", data: equipIdobj, method: "post" });
+export const GetEquipCheckListById = (equipIdobj) => requests({ url: "/getEquipCheckListById", data: equipIdobj, method: "post" });
 //获取指定设备指定日期（哪一天）的点检记录
-export const getEquipCheckListByIdAndDate = (recordobj) => requests({ url: "/getEquipCheckListByIdAndDate", data: recordobj, method: "post" });
-//获取所有设备的状态记录列表
-export const getAllEquipStatusList = () => requests({ url: "/getAllEquipStatusList", method: "get" });
+export const GetEquipCheckListByIdAndDate = (recordobj) => requests({ url: "/getEquipCheckListByIdAndDate", data: recordobj, method: "post" });
+
 //上报设备故障，在数据库中插入点检记录，状态变更记录，更改设备当前状态
 export const SendEquipErrorById = (recordobj) => requests({ url: "/sendEquipErrorById", data: recordobj, method: "post" });
 //插入一条点检记录
@@ -57,8 +54,10 @@ export const SendEquipCheckRecord = (recordobj) => requests({ url: "/sendEquipCh
  * 状态管理
  */
 //获取指定设备的状态记录列表
-export const getEquipStatusListByID = (equipIdobj) => requests({ url: "/getEquipStatusListByID", data: equipIdobj, method: "post" });
+export const GetEquipStatusListByID = (equipIdobj) => requests({ url: "/getEquipStatusListByID", data: equipIdobj, method: "post" });
 //获取指定时间段内设备的状态记录列表（状态变更可能非常频繁，不适用较模糊的某一天）
-export const getEquipStatusListByIDAndDate = (statusobj) => requests({ url: "/getEquipStatusListByIDAndDate", data: statusobj, method: "post" });
-
-//
+export const GetEquipStatusListByIDAndDate = (statusobj) => requests({ url: "/getEquipStatusListByIDAndDate", data: statusobj, method: "post" });
+//获取所有设备的状态记录列表
+export const GetAllEquipStatusList = () => requests({ url: "/getAllEquipStatusList", method: "get" });
+//获取各种状态下设备的数量
+export const GetEquipTyepeNum = () => requests({ url: "/getEquipTyepeNum", method: "get" });

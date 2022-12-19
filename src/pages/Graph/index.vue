@@ -1,14 +1,16 @@
 <template>
   <div class="graph-container">
     <header>
-      <i
-        class="iconfont graph-icon"
-        :class="{
-          'icon-jiankong1': monitorobj.monitorIsActive,
-          'icon-locus-full': traceobj.traceIsActive,
-        }"
-      ></i>
-      <h1>{{ curPageTitle }}</h1>
+      <div class="nav-icon-title">
+        <i
+          class="iconfont graph-icon"
+          :class="{
+            'icon-jiankong1': monitorobj.monitorIsActive,
+            'icon-locus-full': traceobj.traceIsActive,
+          }"
+        ></i>
+        <h1>{{ curPageTitle }}</h1>
+      </div>
       <div class="graph-nav">
         <a
           class="nav-static"
@@ -128,8 +130,10 @@ export default {
   padding-right: 30px;
 }
 .graph-nav {
-  float: right;
-  display: inline-block;
+  display: flex;
+  width: 50%;
+  justify-content: flex-end;
+  align-items: center;
   line-height: 90px;
   padding: 0 30px;
 }
@@ -159,6 +163,7 @@ export default {
 }
 
 header {
+  display: flex;
   width: 100%;
   height: 90px;
   /* background: rgba(0, 0, 0, 0.05); */
@@ -166,7 +171,12 @@ header {
   box-shadow: 0px 0px 10px black;
   z-index: 999;
 }
-
+.nav-icon-title {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 50%;
+}
 footer {
   width: 100%;
   height: 50px;

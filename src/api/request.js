@@ -4,7 +4,7 @@ import nProgress from "nprogress";
 
 //创建axios实例
 const requests = axios.create({
-    baseURL: "/api",
+    baseURL: "http://127.0.0.1:3000/api",
     timeout: 5000,
 });
 //请求拦截器

@@ -1,6 +1,26 @@
 import { AdminLoginIn, RegisterAdmin } from '@/api'
 const state = {
     userInfo: {},
+    checkPersonList: [{
+        udi: 1,
+        name: "冯栩澎"
+    },
+    {
+        udi: 2,
+        name: "周航"
+    }, {
+        udi: 3,
+        name: "黄文涛"
+    }, {
+        udi: 4,
+        name: "田昌陇"
+    }, {
+        udi: 5,
+        name: "王泽仁"
+    }, {
+        udi: 6,
+        name: "吴佳明"
+    }]
 };
 const mutations = {
     ADMINLOGIN(state, info) {
@@ -33,6 +53,7 @@ const actions = {
 };
 const getters = {
     userInfoGetter: (state) => state.userInfo,
+    checkPersonListGetter: (state) => state.checkPersonList,
 };
 export default {
     state,

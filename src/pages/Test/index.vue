@@ -1,7 +1,10 @@
 <template>
   <div class="test-container">
     <header>
-      <h1>点检模块</h1>
+      <div class="icon-title">
+        <i class="iconfont icon-lishijilu_huaban test-icon"></i>
+        <h1>点检模块</h1>
+      </div>
       <div class="test-nav">
         <el-button
           type="success"
@@ -40,37 +43,106 @@
             </el-date-picker>
           </div>
           <div class="test-search-btn test-search-item">
-            <el-button type="primary" round class="test-el-btn">搜索</el-button>
+            <el-button
+              type="primary"
+              round
+              class="test-el-btn"
+              @click="getTestByEidAndDate()"
+              >搜索</el-button
+            >
           </div>
           <div class="test-search-btn test-search-item">
             <el-button
               type="primary"
               round
               class="test-el-btn"
-              @click="addTestRecord()"
+              @click="addTestHandle()"
+              :disabled="isAddRecord"
               >添加记录</el-button
             >
           </div>
         </div>
+        <!-- 添加点检记录 -->
         <div class="add-record-data" v-if="isAddRecord">
-          <h4>点检设备</h4>
-          <el-select v-model="addRecordData.equipId" placeholder="设备">
-            <el-option
-              v-for="item in equipOptions"
-              :key="item.equipId"
-              :label="item.deviceName"
-              :value="item.equipId"
-              :disabled="item.disabled"
+          <div class="add-record-item add-record-item-first">
+            <h3>点检设备</h3>
+            <el-select v-model="addRecordData.equipId" placeholder="设备">
+              <el-option
+                v-for="item in equipOptions"
+                :key="item.equipId"
+                :label="item.deviceName"
+                :value="item.equipId"
+                :disabled="item.disabled"
+              >
+              </el-option>
+            </el-select>
+          </div>
+          <div class="add-record-item">
+            <h3>点检人员</h3>
+            <el-select v-model="addRecordData.checkPerson" placeholder="员工">
+              <el-option
+                v-for="item in checkPersonList"
+                :key="item.uid"
+                :label="item.name"
+                :value="item.name"
+                :disabled="item.disabled"
+              >
+              </el-option>
+            </el-select>
+          </div>
+          <div class="add-record-item item-date">
+            <h3>点检日期</h3>
+            <el-date-picker
+              v-model="addRecordData.checkDate"
+              align="right"
+              type="date"
+              placeholder="选择日期"
+              :picker-options="pickerOptions"
             >
-            </el-option>
-          </el-select>
+            </el-date-picker>
+          </div>
+          <div class="add-record-item">
+            <h3>点检结果</h3>
+            <el-select v-model="addRecordData.checkResult" placeholder="结果">
+              <el-option
+                v-for="(item, index) in checkResultList"
+                :key="index"
+                :label="item.label"
+                :value="item.label"
+                :disabled="item.disabled"
+              >
+              </el-option>
+            </el-select>
+          </div>
+          <div class="add-record-item item-explaination">
+            <h3>说明</h3>
+            <el-input
+              v-model="addRecordData.explaination"
+              placeholder="请输入"
+            ></el-input>
+          </div>
+          <div class="add-record-item">
+            <h3>操作</h3>
+            <el-button
+              type="success"
+              icon="el-icon-check"
+              circle
+              @click="addTestRecord()"
+            ></el-button>
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              circle
+              @click="cancelAddRecord()"
+            ></el-button>
+          </div>
         </div>
         <div class="test-table">
           <el-table
             :data="deviceTestData"
             stripe
             style="width: 85%"
-            height="520"
+            :height="tableHeight"
           >
             <el-table-column fixed prop="recordId" label="记录id" width="100">
             </el-table-column>
@@ -89,13 +161,15 @@
             <el-table-column fixed="right" label="操作" width="100">
               <template slot-scope="scope">
                 <el-button
-                  v-if="scope.row.checkResult == deviceError"
+                  v-if="scope.row.checkResult == checkResultList[0].deviceError"
                   @click="handleRepairClick(scope.row)"
                   type="danger"
                   >报修</el-button
                 >
                 <el-button
-                  v-if="scope.row.checkResult !== deviceError"
+                  v-if="
+                    scope.row.checkResult !== checkResultList[0].deviceError
+                  "
                   @click="handleViewClick(scope.row)"
                   type="primary"
                   >查看</el-button
@@ -115,6 +189,8 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { FormatDate } from "@/utils/DateFormat";
+
 import * as echarts from "echarts/core";
 import {
   TitleComponent,
@@ -172,9 +248,18 @@ export default {
         ],
       },
       timeValue: "",
-      deviceError: "故障",
+      checkResultList: [
+        {
+          label: "故障",
+          deviceError: "故障",
+        },
+        {
+          label: "正常",
+          deviceWork: "正常",
+        },
+      ],
       //是否添加表格数据
-      isAddRecord: true,
+      isAddRecord: false,
       //表格添加数据
       addRecordData: {
         equipId: "",
@@ -184,116 +269,26 @@ export default {
         checkResult: "",
         explaination: "",
       },
-      //表格数据
-      deviceTestData: [
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "故障",
-          explaination: "设备各项数据正常",
-        },
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-      ],
+      //表格高度
+      tableHeight: 520,
     };
   },
   mounted() {
+    //获取所有点检记录
+    try {
+      this.$store.dispatch("getAllCheckList");
+    } catch (error) {
+      console.log(error);
+    }
+    //初始化echarts
     this.initLineChart();
   },
   computed: {
     ...mapGetters({
       equipOptions: "equipOptionsGetter",
+      checkPersonList: "checkPersonListGetter",
+      deviceTestData: "testRecordListGetter",
+      chartData: "testTimeDataGetter",
     }),
   },
   methods: {
@@ -301,23 +296,18 @@ export default {
     backToHomePage() {
       this.$router.push("/home");
     },
+
+    //点检频率表格
     initLineChart() {
       var chartDom = document.getElementById("test-chart");
       var myChart = echarts.init(chartDom);
       var option;
 
-      let base = +new Date(2000, 10, 9);
-      let oneDay = 24 * 3600 * 1000;
-      let data = [[base, Math.random() * 20]];
-      for (let i = 1; i < 10; i++) {
-        let now = new Date((base += oneDay));
-        data.push([+now, Math.round(Math.random() * 20)]);
-      }
       option = {
         tooltip: {
           trigger: "axis",
           position: function (pt) {
-            return [pt[0], "10%"];
+            return [pt[0], "1%"];
           },
         },
         grid: {
@@ -330,6 +320,9 @@ export default {
         title: {
           left: "center",
           text: "点检频率",
+          textStyle: {
+            fontSize: "24px",
+          },
         },
         toolbox: {
           feature: {
@@ -366,12 +359,39 @@ export default {
             smooth: true,
             symbol: "none",
             areaStyle: {},
-            data: data,
+            data: this.chartData,
           },
         ],
       };
-
       option && myChart.setOption(option);
+    },
+    //根据设备和日期获取点检记录
+    async getTestByEidAndDate() {
+      if (this.equipValue == "") {
+        alert("请选择设备！");
+        return;
+      }
+      if (this.timeValue == "") {
+        alert("请选择日期！");
+        return;
+      }
+      const eid = this.equipValue;
+      const date = FormatDate(this.timeValue);
+      console.log(eid, date);
+      let res = null;
+      try {
+        res = await this.$store.dispatch("getRecordsByEidAndDate", {
+          equipId: eid,
+          date,
+        });
+        if (res == "ok") {
+          alert("查询成功");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+      this.equipValue = "";
+      this.timeValue = "";
     },
     //报修按钮
     async handleRepairClick(data) {
@@ -381,11 +401,11 @@ export default {
       let res = null;
       try {
         res = await this.$store.dispatch("sendDeviceError", errorobj);
+        if (res == "ok") {
+          alert("上报错误成功！等待检修");
+        }
       } catch (error) {
         console.log(error);
-      }
-      if (res == "ok") {
-        alert("上报错误成功！等待检修");
       }
     },
     //查看按钮
@@ -423,7 +443,84 @@ export default {
           "\n"
       );
     },
-    addTestRecord() {},
+    //检测记录输入
+    testRecordInput() {
+      //确认添加
+      if (this.addRecordData.equipId == "") {
+        alert("请选择点检设备！");
+        return false;
+      }
+      if (this.addRecordData.checkPerson == "") {
+        alert("请选择点检人员！");
+        return false;
+      }
+      if (this.addRecordData.checkDate == "") {
+        alert("请选择点检日期！");
+        return false;
+      }
+      if (this.addRecordData.checkResult == "") {
+        alert("请选择检测结果！");
+        return false;
+      }
+      if (this.addRecordData.explaination == "") {
+        alert("请填写点检说明！");
+        return false;
+      }
+      return true;
+    },
+    //清除输入框
+    clearRecordInput() {
+      this.addRecordData.equipId == "";
+      this.addRecordData.deviceName = "";
+      this.addRecordData.checkPerson = "";
+      this.addRecordData.checkDate = "";
+      this.addRecordData.checkResult = "";
+      this.addRecordData.explaination = "";
+    },
+    //添加记录展开编辑行
+    addTestHandle() {
+      if (!this.isAddRecord) {
+        this.isAddRecord = !this.isAddRecord;
+        this.tableHeight = 480;
+      }
+    },
+    //确认添加点检记录
+    async addTestRecord() {
+      //添加记录
+      if (!this.testRecordInput()) {
+        return;
+      }
+      //根据eid填充设备名称
+      this.addRecordData.deviceName = "设备" + this.addRecordData.equipId;
+      //格式化日期
+      this.addRecordData.checkDate = FormatDate(this.addRecordData.checkDate);
+      //复制得到数据对象
+      const data = Object.assign({}, this.addRecordData);
+      //console.log("111", data);
+      //清除输入框
+      this.clearRecordInput();
+      //更改按钮，表格状态
+      this.isAddRecord = !this.isAddRecord;
+      this.tableHeight = 520;
+      //提交记录到后台
+      let res = null;
+      try {
+        res = await this.$store.dispatch("addEquipCheckRecord", data);
+        if (res == "ok") {
+          alert("点检记录插入成功！");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    //取消添加记录
+    cancelAddRecord() {
+      //清除输入框
+      this.clearRecordInput();
+      //更改按钮状态
+      this.isAddRecord = !this.isAddRecord;
+      this.tableHeight = 520;
+    },
   },
 };
 </script>
@@ -437,6 +534,7 @@ export default {
   background-color: #4c9ae9;
 }
 header {
+  display: flex;
   width: 100%;
   height: 90px;
   /* background: rgba(0, 0, 0, 0.05); */
@@ -453,19 +551,29 @@ header h1 {
   font-size: 40px;
   text-shadow: 4px 4px 6px black;
 }
-
+.icon-title {
+  width: 60%;
+  display: flex;
+  align-items: center;
+}
+.test-icon {
+  font-size: 60px;
+  color: #fff;
+  padding-left: 30px;
+}
 .test-container .test-el-btn {
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 3px;
   box-shadow: 2px 2px 2px black;
+}
+.test-search-btn.test-search-item .test-el-btn {
   transform: translateY(20px);
 }
-
 .test-nav {
-  float: right;
+  width: 60%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   padding-right: 30px;
 }
@@ -506,6 +614,33 @@ header h1 {
   display: inline-block;
   line-height: 100px;
 }
+.add-record-data {
+  display: flex;
+  justify-content: flex-start;
+  margin: 10px 0 10px 0;
+  height: 80px;
+}
+.add-record-item {
+  padding: 0 15px;
+}
+.add-record-item h3 {
+  margin-bottom: 10px;
+}
+.add-record-data .add-record-item >>> .el-input__inner {
+  width: 120px;
+}
+.add-record-data .add-record-item.item-date >>> .el-input__inner {
+  width: 140px;
+}
+.add-record-data .add-record-item.item-date >>> .el-date-editor.el-input {
+  width: 140px;
+}
+.add-record-data .add-record-item.item-explaination >>> .el-input__inner {
+  width: 240px;
+}
+.add-record-item-first {
+  padding-left: 50px;
+}
 .test-table .el-table {
   margin-left: 60px;
   font-size: 16px;
@@ -519,5 +654,6 @@ footer {
   background: rgba(0, 0, 0, 0.4);
   color: lightgray;
   font-size: 15px;
+  z-index: 999;
 }
 </style>

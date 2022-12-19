@@ -1,7 +1,10 @@
 <template>
   <div class="status-container">
     <header>
-      <h1>状态管理</h1>
+      <div class="status-icon-title">
+        <i class="iconfont icon-xitongzhuangtai status-icon"></i>
+        <h1>状态管理</h1>
+      </div>
       <div class="status-nav">
         <el-button
           type="success"
@@ -17,12 +20,13 @@
         <div class="status-search">
           <div class="status-search-item">
             <h2>设备选择</h2>
-            <el-select v-model="equipValue" multiple placeholder="请选择">
+            <el-select v-model="equipValue" placeholder="请选择">
               <el-option
                 v-for="item in equipOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                :key="item.equipId"
+                :label="item.deviceName"
+                :value="item.equipId"
+                :disabled="item.disabled"
               >
               </el-option>
             </el-select>
@@ -32,42 +36,43 @@
             <el-date-picker
               v-model="timeValue"
               type="daterange"
-              align="right"
-              unlink-panels
               range-separator="至"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              :picker-options="pickerOptions"
             >
             </el-date-picker>
           </div>
           <div class="status-search-item status-search-btn">
-            <el-button type="primary" round class="status-el-btn"
+            <el-button
+              type="primary"
+              round
+              class="status-el-btn"
+              @click="getStatusListByEidAndDate()"
               >搜索</el-button
             >
           </div>
         </div>
         <div class="add-record-data"></div>
         <div class="status-table">
-          <el-table
-            :data="deviceTestData"
-            stripe
-            style="width: 85%"
-            height="520"
-          >
-            <el-table-column fixed prop="recordId" label="记录id" width="150">
+          <el-table :data="statusData" stripe style="width: 85%" height="520">
+            <el-table-column fixed prop="recordId" label="记录id" width="110">
             </el-table-column>
-            <el-table-column prop="equipId" label="设备id" width="120">
+            <el-table-column prop="equipId" label="设备id" width="110">
             </el-table-column>
-            <el-table-column prop="deviceName" label="设备名" width="120">
+            <el-table-column prop="deviceName" label="设备名" width="140">
             </el-table-column>
-            <el-table-column prop="checkPerson" label="检修工" width="120">
+            <el-table-column prop="checkDate" label="检测日期" width="150">
             </el-table-column>
-            <el-table-column prop="checkDate" label="检修日期" width="300">
+            <el-table-column prop="checkResult" label="状态" width="140">
             </el-table-column>
-            <el-table-column prop="checkResult" label="结果" width="120">
+            <el-table-column prop="explaination" label="说明" width="150">
             </el-table-column>
-            <el-table-column prop="explaination" label="说明" width="120">
+            <el-table-column fixed="right" label="操作" width="120">
+              <template slot-scope="scope">
+                <el-button @click="handleViewClick(scope.row)" type="primary"
+                  >查看</el-button
+                >
+              </template>
             </el-table-column>
           </el-table>
         </div>
@@ -81,6 +86,8 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+import { FormatDate } from "@/utils/DateFormat";
 //按需引入echarts饼状图
 import * as echarts from "echarts/core";
 import {
@@ -104,75 +111,18 @@ export default {
   data() {
     return {
       //设备选项
-      equipOptions: [
-        {
-          value: "选项1",
-          label: "黄金糕",
-        },
-        {
-          value: "选项2",
-          label: "双皮奶",
-        },
-        {
-          value: "选项3",
-          label: "蚵仔煎",
-        },
-        {
-          value: "选项4",
-          label: "龙须面",
-        },
-        {
-          value: "选项5",
-          label: "北京烤鸭",
-        },
-      ],
-      equipValue: [],
+      equipValue: "",
       //日期选项
-      pickerOptions: {
-        shortcuts: [
-          {
-            text: "最近一周",
-            onClick(picker) {
-              const end = new Date();
-              const start = new Date();
-              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
-              picker.$emit("pick", [start, end]);
-            },
-          },
-          {
-            text: "最近一个月",
-            onClick(picker) {
-              const end = new Date();
-              const start = new Date();
-              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
-              picker.$emit("pick", [start, end]);
-            },
-          },
-          {
-            text: "最近三个月",
-            onClick(picker) {
-              const end = new Date();
-              const start = new Date();
-              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
-              picker.$emit("pick", [start, end]);
-            },
-          },
-        ],
-      },
-      timeValue: "",
+      timeValue: [],
       //表格数据
-      deviceTestData: [
-        {
-          recordId: 1,
-          equipId: 1,
-          deviceName: "设备1",
-          checkPerson: "小王",
-          checkDate: "2022-12-19",
-          checkResult: "正常",
-          explaination: "设备各项数据正常",
-        },
-      ],
     };
+  },
+  computed: {
+    ...mapGetters({
+      statusData: "allStatusRecordListGetter",
+      equipOptions: "equipOptionsGetter",
+      equipTypeData: "deviceTypeListGetter",
+    }),
   },
   mounted() {
     this.initPieChart();
@@ -183,7 +133,20 @@ export default {
       this.$router.push("/home");
     },
     //初始化ehcarts表格
-    initPieChart() {
+    async initPieChart() {
+      //获取设备状态分布数据
+      try {
+        await this.$store.dispatch("getEquipTypeData");
+      } catch (error) {
+        console.log(error);
+      }
+      var data = [];
+      for (const item of this.equipTypeData) {
+        let temp = {};
+        temp.value = item.num;
+        temp.name = item.status;
+        data.push(temp);
+      }
       var chartDom = document.getElementById("status-chart");
       var myChart = echarts.init(chartDom);
       var option;
@@ -200,23 +163,26 @@ export default {
         },
         tooltip: {
           trigger: "item",
+          textStyle: {
+            fontSize: "17px",
+          },
         },
         legend: {
           orient: "vertical",
           left: "left",
+          textStyle: {
+            fontSize: "17px",
+          },
         },
         series: [
           {
             name: "Access From",
             type: "pie",
             radius: "50%",
-            data: [
-              { value: 1048, name: "Search Engine" },
-              { value: 735, name: "Direct" },
-              { value: 580, name: "Email" },
-              { value: 484, name: "Union Ads" },
-              { value: 300, name: "Video Ads" },
-            ],
+            data,
+            label: {
+              fontSize: "17px",
+            },
             emphasis: {
               itemStyle: {
                 shadowBlur: 10,
@@ -229,6 +195,69 @@ export default {
       };
 
       option && myChart.setOption(option);
+    },
+    //查看按钮
+    handleViewClick(data) {
+      const {
+        recordId,
+        equipId,
+        deviceName,
+        checkDate,
+        checkResult,
+        explaination,
+      } = data;
+      alert(
+        "记录编号：" +
+          recordId +
+          "\n" +
+          "设备ID：" +
+          equipId +
+          "\n" +
+          "设备名称：" +
+          deviceName +
+          "\n" +
+          "检测日期：" +
+          checkDate +
+          "\n" +
+          "检测结果：" +
+          checkResult +
+          "\n" +
+          "检测说明：" +
+          explaination +
+          "\n"
+      );
+    },
+    //根据eid和date获取状态列表
+    async getStatusListByEidAndDate() {
+      if (this.equipValue == "") {
+        alert("请选择设备！");
+        return;
+      }
+      if (this.timeValue.length == 0) {
+        alert("请选择日期！");
+        return;
+      }
+      const eid = this.equipValue;
+      const sDate = FormatDate(this.timeValue[0]);
+      const eDate = FormatDate(this.timeValue[1]);
+      console.log(eid, sDate, eDate);
+      let res = null;
+      try {
+        res = await this.$store.dispatch("getRecordsByEidAndDate", {
+          equipId: eid,
+          startTime: sDate,
+          endTime: eDate,
+        });
+        if (res == "ok") {
+          alert("查询成功");
+        } else {
+          alert("查询失败");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+      this.equipValue = "";
+      this.timeValue = [];
     },
   },
 };
@@ -274,6 +303,7 @@ footer {
   font-size: 15px;
 }
 header {
+  display: flex;
   width: 100%;
   height: 90px;
   /* background: rgba(0, 0, 0, 0.05); */
@@ -290,17 +320,30 @@ header h1 {
   font-size: 40px;
   text-shadow: 4px 4px 6px black;
 }
+.status-icon-title {
+  width: 60%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.status-icon {
+  font-size: 60px;
+  color: #fff;
+  padding-left: 30px;
+}
 .status-container .status-el-btn {
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 3px;
   box-shadow: 2px 2px 2px black;
+}
+.status-search-item.status-search-btn .status-el-btn {
   transform: translateY(20px);
 }
 .status-nav {
-  float: right;
+  width: 40%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   padding-right: 30px;
 }
