@@ -159,9 +159,10 @@ const mutations = {
         state.equipOptions = infos;
     },
     EQUIPINFO(state, info) {
-        for (const { equip, index } of state.equipOptions) {
-            if (equip.equipId === info.equipId) {
-                state.equipOptions[index] = info;
+        // console.log(info);
+        for (let i = 0; i < state.equipOptions.length; i++) {
+            if (state.equipOptions[i].equipId == info.equipId) {
+                state.equipOptions[i] = info;
                 break;
             }
         }
@@ -174,59 +175,60 @@ const actions = {
     //获取所有设备信息
     async getAllEuipInfo({ commit }) {
         let result = await GetAllEquipInfo();
-        if (result.code == 200) {
-            commit('ALLEQUIPINFO', result.data);
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        // if (result.code == 200) {
+        commit('ALLEQUIPINFO', result);
+        return 'ok';
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
     //根据id获取单个设备信息
     async getEquipInfoById({ commit }, equipIdobj = {}) {
         let result = await GetEquipInfoById(equipIdobj);
-        if (result.code == 200) {
-            commit('EQUIPINFO', result.data);
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        // console.log("store-result", result);
+        // if (result.code == 200) {
+        commit('EQUIPINFO', result);
+        return result;
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
     //获取所有目的地信息
     async getAllTargetInfo({ commit }) {
         let result = await GetAllTargetPlaceInfo();
-        if (result.code == 200) {
-            commit('ALLTARGETINFO', result.data);
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        // if (result.code == 200) {
+        commit('ALLTARGETINFO', result);
+        return 'ok';
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
     //添加一条作业记录
     async addEquipWorkRecord({ commit }, workinfo = {}) {
         let result = await AddEquipWorkRecord(workinfo);
-        if (result.code == 200) {
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        // if (result.code == 200) {
+        return 'ok';
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
     //根据设备id和日期获取历史轨迹
     async getTraceByEidAndDate({ commit }, equipInfo = {}) {
         let res = await GetEquipTraceByIdAndTime(equipInfo);
-        if (res.code == 200) {
-            return res.data;
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        // if (res.code == 200) {
+        return res;
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
     //获取设备工时
     async getAllDeviceWorkTIme({ commit }) {
         let res = await GetDevsTotalWorkTime();
-        if (res.code == 200) {
-            return res.data;
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        // if (res.code == 200) {
+        return res;
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     }
 };
 const getters = {

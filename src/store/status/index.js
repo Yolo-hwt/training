@@ -106,8 +106,6 @@ const state = {
         { num: 735, status: "作业中" },
         { num: 580, status: "维修中" },
     ],
-
-
 };
 const mutations = {
     // ADMINLOGIN(state, info) {
@@ -123,33 +121,49 @@ const mutations = {
 const actions = {
     //获取所有设备的状态记录
     async getAllEquipStatusRecord({ commit }) {
+        var list = [];
+        var num = 0;
         let result = await GetAllEquipStatusList();
-        if (result.code == 200) {
-            commit('ALLSTATUSLIST', result.data);
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
+        for (let i = 0; i < result.length; i++) {
+            let listTemp = result[i];
+            for (const item of listTemp.statusRecord) {
+                item.recordId = num++;
+                item.equipId = listTemp.equipId;
+                list.push(item);
+            }
         }
+        commit('ALLSTATUSLIST', list);
+        return 'ok';
     },
     //获取指定时间段内设备的状态记录列表
-    async getRecordsByEidAndDate({ commit }, statusobj = {}) {
+    async getStatusRecordsByEidAndDate({ commit }, statusobj = {}) {
+        var list = [];
+        var num = 0;
         let result = await GetEquipStatusListByIDAndDate(statusobj);
-        if (result.code == 200) {
-            commit('ALLSTATUSLIST', result.data);
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
+
+        let listTemp = result.statusRecord;
+        for (const item of listTemp) {
+            item.recordId = num++;
+            item.equipId = result.equipId;
+            list.push(item);
         }
+
+        // if (result.code == 200) {
+        commit('ALLSTATUSLIST', list);
+        return 'ok';
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
     //获取设备状态分布数据
     async getEquipTypeData({ commit }) {
         let result = await GetEquipTyepeNum();
-        if (result.code == 200) {
-            commit('DEVICETYPELIST', result.data);
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        // if (result.code == 200) {
+        commit('DEVICETYPELIST', result);
+        return 'ok';
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
 
 };

@@ -201,11 +201,15 @@ export default {
 
       // console.log(sDate, eDate);
       //获取历史轨迹
-      this.traceHistory = await this.$store.dispatch("getTraceByEidAndDate", {
-        equipId: parseInt(eid),
-        startTime: sDate,
-        endTime: eDate,
-      });
+      this.traceHistory = await this.$store.dispatch(
+        "getTraceByEidAndDate",
+        JSON.stringify({
+          equipId: parseInt(eid),
+          startTime: sDate,
+          endTime: eDate,
+        })
+      );
+      this.traceValue = 1;
     },
     //根据码头id获取码头数据对象
     getWharfBySid(sid) {
@@ -285,12 +289,13 @@ export default {
       let maxTime = 0;
       for (const item of timelist) {
         if (item.totalWorkTime > maxTime) {
-          maxTime = totalWorkTime;
+          maxTime = item.totalWorkTime;
         }
         result.push([item.totalWorkTime, 0, "设备" + item.equipId]);
       }
+      // console.log(maxTime);
       if (maxTime > this.deviceMaxWorkTime) {
-        this.deviceWorkTime = maxTime;
+        this.deviceMaxWorkTime = maxTime + (10 - (maxTime % 10));
       }
       this.deviceWorkTime = result;
       return result;
@@ -346,6 +351,7 @@ export default {
         series: [
           {
             type: "bar",
+            barWidth: "50%",
             encode: {
               // Map the "amount" column to X axis.
               x: "time",

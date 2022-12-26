@@ -144,19 +144,19 @@
             style="width: 85%"
             :height="tableHeight"
           >
-            <el-table-column fixed prop="recordId" label="记录id" width="100">
+            <el-table-column fixed prop="recordId" label="记录id" width="80">
             </el-table-column>
-            <el-table-column prop="equipId" label="设备id" width="100">
+            <el-table-column prop="equipId" label="设备id" width="80">
             </el-table-column>
-            <el-table-column prop="deviceName" label="设备名" width="120">
+            <el-table-column prop="deviceName" label="设备名" width="110">
             </el-table-column>
-            <el-table-column prop="checkPerson" label="检修工" width="120">
+            <el-table-column prop="checkPerson" label="检修工" width="110">
             </el-table-column>
-            <el-table-column prop="checkDate" label="检修日期" width="120">
+            <el-table-column prop="checkDate" label="检修日期" width="220">
             </el-table-column>
-            <el-table-column prop="checkResult" label="结果" width="120">
+            <el-table-column prop="checkResult" label="结果" width="100">
             </el-table-column>
-            <el-table-column prop="explaination" label="说明" width="120">
+            <el-table-column prop="explaination" label="说明" width="100">
             </el-table-column>
             <el-table-column fixed="right" label="操作" width="100">
               <template slot-scope="scope">
@@ -275,11 +275,7 @@ export default {
   },
   mounted() {
     //获取所有点检记录
-    try {
-      this.$store.dispatch("getAllCheckList");
-    } catch (error) {
-      console.log(error);
-    }
+    this.getAllCheckList();
     //初始化echarts
     this.initLineChart();
   },
@@ -292,6 +288,14 @@ export default {
     }),
   },
   methods: {
+    //获取所有点检记录
+    async getAllCheckList() {
+      try {
+        await this.$store.dispatch("getAllCheckList");
+      } catch (error) {
+        console.log(error);
+      }
+    },
     //返回主页
     backToHomePage() {
       this.$router.push("/home");
@@ -369,10 +373,14 @@ export default {
     async getTestByEidAndDate() {
       if (this.equipValue == "") {
         alert("请选择设备！");
+        //获取所有点检记录
+        this.getAllCheckList();
         return;
       }
       if (this.timeValue == "") {
         alert("请选择日期！");
+        //获取所有点检记录
+        this.getAllCheckList();
         return;
       }
       const eid = this.equipValue;
@@ -380,13 +388,13 @@ export default {
       console.log(eid, date);
       let res = null;
       try {
-        res = await this.$store.dispatch("getRecordsByEidAndDate", {
-          equipId: eid,
-          date,
-        });
-        if (res == "ok") {
-          alert("查询成功");
-        }
+        await this.$store.dispatch(
+          "getCheckRecordsByEidAndDate",
+          JSON.stringify({
+            equipId: eid,
+            date,
+          })
+        );
       } catch (error) {
         console.log(error);
       }
@@ -495,7 +503,12 @@ export default {
       //格式化日期
       this.addRecordData.checkDate = FormatDate(this.addRecordData.checkDate);
       //复制得到数据对象
-      const data = Object.assign({}, this.addRecordData);
+      const data = JSON.stringify(
+        Object.assign(
+          { recordId: this.deviceTestData.length + 1 },
+          this.addRecordData
+        )
+      );
       //console.log("111", data);
       //清除输入框
       this.clearRecordInput();

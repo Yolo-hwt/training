@@ -129,55 +129,84 @@ const mutations = {
     //     state.mapConfig.mapSignList = info;
     // }
     //所有test记录
+    SEARCHTESTRECORD(state, records) {
+        let list = records.record;
+        let res = [];
+        for (let i = 0; i < list.length; i++) {
+            let temp = list[i];
+            if (temp !== undefined && temp !== null) {
+                temp.recordId = i;
+                res.push(temp)
+            }
+        }
+        state.testRecordList = res;
+    },
     ALLTESTRECORD(state, records) {
-        state.testRecordList = records;
+        var recordsData = [];
+        for (let i = 0; i < records.length; i++) {
+            let dataTemp = records[i].record;
+            // console.log(dataTemp);
+            for (let j = 0; j < dataTemp.length; j++) {
+                let dataItem = dataTemp[j];
+
+                // console.log(dataItem);
+                if (dataItem !== null && dataItem !== undefined) {
+                    console.log(recordsData.length);
+                    dataItem.recordId = recordsData.length;
+                    recordsData.push(dataItem);
+                }
+            }
+        }
+        console.log(recordsData);
+        state.testRecordList = recordsData;
     },
     //点检记录插入state
     ADDTESTRECORD(state, record) {
-        record.recordId = state.testRecordList.length;
-        state.testRecordList.unshift(record);
+        state.testRecordList.unshift(JSON.parse(record));
     }
 };
 const actions = {
     //上报设备错误
     async sendDeviceError({ commit }, errorinfo = {}) {
         let result = await SendEquipErrorById(errorinfo);
-        if (result.code == 200 && result.data == true) {
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        // if (result.code == 200 && result.data == true) {
+        return 'ok';
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
     //添加一条点检记录
     async addEquipCheckRecord({ commit }, workobj = {}) {
         //点检记录插入state
         commit('ADDTESTRECORD', workobj);
         let result = await SendEquipCheckRecord(workobj);
-        if (result.code == 200 && result.data == true) {
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        // if (result.code == 200 && result.data == true) {
+        return 'ok';
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
     //获取所有点检记录
     async getAllCheckList({ commit }) {
         let result = await GetAllEquipCheckList();
-        if (result.code == 200) {
-            commit('ALLTESTRECORD', result.data);
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        console.log(result);
+        // if (result.code == 200) {
+        commit('ALLTESTRECORD', result);
+        return 'ok';
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
     //根据设备和日期获取点检记录
-    async getRecordsByEidAndDate({ commit }, infoObj = {}) {
+    async getCheckRecordsByEidAndDate({ commit }, infoObj = {}) {
         let result = await GetEquipCheckListByIdAndDate(infoObj);
-        if (result.code == 200) {
-            commit('ALLTESTRECORD', result.data);
-            return 'ok';
-        } else {
-            return Promise.reject(new Error('failed'))
-        }
+        console.log('check-res', result);
+        // if (result.code == 200) {
+        commit('SEARCHTESTRECORD', result);
+        return 'ok';
+        // } else {
+        //     return Promise.reject(new Error('failed'))
+        // }
     },
     //获取设备点检频率
     //...

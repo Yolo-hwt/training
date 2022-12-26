@@ -36,6 +36,10 @@
             <input type="text" placeholder="工号" v-model="signUpUserId" />
           </div>
           <div class="input-field">
+            <i class="fas fa-user"></i>
+            <input type="text" placeholder="用户名" v-model="signUpUserName" />
+          </div>
+          <div class="input-field">
             <i class="fas fa-envelope"></i>
             <input type="email" placeholder="邮箱" v-model="signUpUserEmail" />
           </div>
@@ -93,6 +97,7 @@ export default {
       signUpUserId: "",
       signUpUserPsd: "",
       signUpUserEmail: "",
+      signUpUserName: "",
     };
   },
   mounted() {
@@ -122,7 +127,9 @@ export default {
         return flag;
       }
       //调用登录接口
-      flag = await this.$store.dispatch("adminLogin", { userId, userPsd });
+      const parma = JSON.stringify({ id: userId, password: userPsd });
+      // console.log(parma);
+      flag = await this.$store.dispatch("adminLogin", parma);
       return flag;
     },
     //登录提交处理
@@ -154,34 +161,44 @@ export default {
     },
     //注册提交处理
     async handleSignUpSubmit() {
-      const nullflag_name = this.signUpUserId === "" ? true : false;
+      const nullflag_id = this.signUpUserId === "" ? true : false;
       const nullflag_email = this.signUpUserEmail === "" ? true : false;
       const nullflag_psd = this.signUpUserPsd === "" ? true : false;
+      const nullflag_name = this.signUpUserName === "" ? true : false;
 
-      const name = this.signUpUserId;
-      const psd = this.signUpUserPsd;
-      const email = this.signUpUserEmail;
+      const id = this.signUpUserId;
+      const userName = this.signUpUserName;
+      const password = this.signUpUserPsd;
+      const mailbox = this.signUpUserEmail;
 
-      if (nullflag_name || nullflag_psd || nullflag_email) {
-        alert("账号邮箱或密码不能为空");
+      //       id:xxx，
+      // password:xxx，userName:xxx,
+      // mailbox:xxx
+
+      if (nullflag_name || nullflag_psd || nullflag_email || nullflag_id) {
+        alert("用户名、id、邮箱或密码不能为空");
       } else {
-        const result = await this.$store.dispatch("adminRegister", {
-          name,
-          psd,
-          email,
+        const parma = JSON.stringify({
+          id,
+          userName,
+          password,
+          mailbox,
         });
+        // console.log(parma);
+        const result = await this.$store.dispatch("adminRegister", parma);
         if (result) {
-          alert(`账号${name}注册成功!`);
+          alert(`账号id:${id}userName:${userName}注册成功!`);
           //跳转登录页面
           this.signIn();
         } else {
-          alert(`账号${name}注册失败!`);
+          alert(`账号id:${id}userName:${userName}注册失败!`);
         }
       }
 
       this.signUpUserId = "";
       this.signUpUserEmail = "";
       this.signUpUserPsd = "";
+      this.signUpUserName = "";
     },
   },
 };

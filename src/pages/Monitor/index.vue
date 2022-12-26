@@ -23,7 +23,7 @@
         <div class="monitor-info-item">
           <span class="info-item-title">累计工时</span>
           <span class="info-item-text"
-            >{{ curEquipMent.totalWOrkTime }}&nbsp min</span
+            >{{ curEquipMent.totalWorkTime }}&nbsp min</span
           >
         </div>
         <div class="monitor-info-item">
@@ -116,14 +116,15 @@ export default {
   data() {
     return {
       //当前设备
-      curEquipMent: {
-        equipId: 1, //eid
-        deviceName: "墨子一号",
-        location: 1, //sid
-        date: "2022.12.17",
-        totalWOrkTime: "116",
-        status: "空闲",
-      },
+      // curEquipMent: {
+      //   equipId: 1, //eid
+      //   deviceName: "墨子一号",
+      //   location: 1, //sid
+      //   date: "2022.12.17",
+      //   totalWOrkTime: "116",
+      //   status: "空闲",
+      // },
+      curEquipMent: {},
       //设备选项
       equipValue: "",
       //位置选项
@@ -152,9 +153,18 @@ export default {
     }),
   },
   mounted() {
-    this.initMap();
+    this.initData();
   },
   methods: {
+    //初始化数据
+    async initData() {
+      try {
+        this.curEquipMent = this.equipOptions[0];
+        this.initMap();
+      } catch (error) {
+        console.log(error);
+      }
+    },
     //初始化百度地图
     async initMap() {
       //初始化配置
@@ -260,11 +270,11 @@ export default {
       }
       // let path = [source, target];
       //发布指令
-      let workobj = {
+      let workobj = JSON.stringify({
         equipId: this.curEquipMent.equipId,
         destination: target.sid,
         worktime: time,
-      };
+      });
 
       let res = await this.$store.dispatch("addEquipWorkRecord", workobj);
       if (res == "ok") {
@@ -278,9 +288,14 @@ export default {
             "分钟"
         );
         //发布成功后更新当前设备信息
-        await this.$store.dispatch("getEquipInfoById", {
-          equipId: this.curEquipMent.equipId,
-        });
+        // console.log(this.curEquipMent);
+        const equipId = this.curEquipMent.equipId;
+        this.curEquipMent = await this.$store.dispatch(
+          "getEquipInfoById",
+          JSON.stringify({
+            equipId,
+          })
+        );
       } else {
         alert("指令发布失败");
       }

@@ -69,7 +69,17 @@ export default {
       ],
     };
   },
+  mounted() {
+    this.initData();
+  },
   methods: {
+    async initData() {
+      try {
+        await this.$store.dispatch("getAllEuipInfo");
+      } catch (error) {
+        console.log(error);
+      }
+    },
     getLocalPicByName(picnme, type = "png") {
       return require("../../assets/" + picnme + "." + type);
       // return require(picnme);

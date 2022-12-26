@@ -34,8 +34,9 @@
           <div class="status-search-item">
             <h2>日期选择</h2>
             <el-date-picker
+              value-format="yyyy-MM-dd HH:mm:ss"
               v-model="timeValue"
-              type="daterange"
+              type="datetimerange"
               range-separator="至"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
@@ -54,18 +55,23 @@
         </div>
         <div class="add-record-data"></div>
         <div class="status-table">
-          <el-table :data="statusData" stripe style="width: 85%" height="520">
-            <el-table-column fixed prop="recordId" label="记录id" width="110">
+          <el-table
+            :data="statusTableData"
+            stripe
+            style="width: 85%"
+            height="520"
+          >
+            <el-table-column fixed prop="recordId" label="记录id" width="80">
             </el-table-column>
-            <el-table-column prop="equipId" label="设备id" width="110">
+            <el-table-column prop="equipId" label="设备id" width="80">
             </el-table-column>
-            <el-table-column prop="deviceName" label="设备名" width="140">
+            <el-table-column prop="deviceName" label="设备名" width="120">
             </el-table-column>
-            <el-table-column prop="checkDate" label="检测日期" width="150">
+            <el-table-column prop="checkDate" label="检测日期" width="230">
             </el-table-column>
-            <el-table-column prop="checkResult" label="状态" width="140">
+            <el-table-column prop="checkResult" label="状态" width="100">
             </el-table-column>
-            <el-table-column prop="explaination" label="说明" width="150">
+            <el-table-column prop="explaination" label="说明" width="210">
             </el-table-column>
             <el-table-column fixed="right" label="操作" width="120">
               <template slot-scope="scope">
@@ -114,34 +120,107 @@ export default {
       equipValue: "",
       //日期选项
       timeValue: [],
-      //表格数据
+      //echarts表格数据
+      deviceTypeList: [
+        { num: 10, status: "空闲" },
+        { num: 7, status: "作业中" },
+        { num: 2, status: "维修中" },
+      ],
+      //状态表格数据
+      statusTableData: [],
+      //默认表格条目
+      defaultTableNum: 50,
     };
   },
   computed: {
     ...mapGetters({
       statusData: "allStatusRecordListGetter",
       equipOptions: "equipOptionsGetter",
-      equipTypeData: "deviceTypeListGetter",
+      // equipTypeData: "deviceTypeListGetter",
     }),
   },
   mounted() {
-    this.initPieChart();
+    this.initData();
   },
   methods: {
+    //初始化数据
+    async initData() {
+      await this.getAllStatusRecords();
+      this.getDeviceTypeData();
+      this.initPieChart();
+    },
+    //获取所有状态列表
+    async getAllStatusRecords() {
+      try {
+        //获取所有设备的状态记录
+        await this.$store.dispatch("getAllEquipStatusRecord");
+        this.statusTableData = this.formatStatusData(
+          this.statusData.slice(0, this.defaultTableNum)
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    //格式化表格数据
+    formatStatusData(tData) {
+      var res = [];
+      for (const item of tData) {
+        item.deviceName = this.getDeviceNameByEid(item.equipId);
+        item.explaination = this.getExplainByStatus(item.status);
+        item.checkDate = item.time;
+        item.checkResult = item.status;
+        res.push(item);
+      }
+      return res;
+    },
+    //获取设备状态分布数据
+    getDeviceTypeData() {
+      //获取设备状态分布数据
+      let numObj = { free: 0, work: 0, repair: 0 };
+      for (const item of this.equipOptions) {
+        if (item.status == "空闲") {
+          numObj.free++;
+        }
+        if (item.status == "作业中") {
+          numObj.work++;
+        }
+        if (item.status == "维修中") {
+          numObj.repair++;
+        }
+      }
+      //至少为1
+      this.deviceTypeList[0].num = numObj.free == 0 ? 1 : numObj.free;
+      this.deviceTypeList[1].num = numObj.work == 0 ? 1 : numObj.work;
+      this.deviceTypeList[2].num = numObj.repair == 0 ? 1 : numObj.repair;
+    },
+    //根据设备状态匹配说明
+    getExplainByStatus(status) {
+      if (status == "空闲") {
+        return "当前设备状态良好，设备空闲中";
+      }
+      if (status == "作业中") {
+        return "当前设备状态良好，设备作业中";
+      }
+      if (status == "维修中") {
+        return "当前设备出现故障，设备作维修中";
+      }
+    },
+    //根据设备id获取设备名称
+    getDeviceNameByEid(eid) {
+      for (const equip of this.equipOptions) {
+        if (equip.equipId == eid) {
+          return equip.deviceName;
+        }
+      }
+    },
     //返回主页
     backToHomePage() {
       this.$router.push("/home");
     },
     //初始化ehcarts表格
-    async initPieChart() {
-      //获取设备状态分布数据
-      try {
-        await this.$store.dispatch("getEquipTypeData");
-      } catch (error) {
-        console.log(error);
-      }
+    initPieChart() {
       var data = [];
-      for (const item of this.equipTypeData) {
+      for (const item of this.deviceTypeList) {
         let temp = {};
         temp.value = item.num;
         temp.name = item.status;
@@ -230,26 +309,32 @@ export default {
     //根据eid和date获取状态列表
     async getStatusListByEidAndDate() {
       if (this.equipValue == "") {
+        await this.getAllStatusRecords();
         alert("请选择设备！");
         return;
       }
       if (this.timeValue.length == 0) {
+        await this.getAllStatusRecords();
         alert("请选择日期！");
         return;
       }
       const eid = this.equipValue;
-      const sDate = FormatDate(this.timeValue[0]);
-      const eDate = FormatDate(this.timeValue[1]);
-      console.log(eid, sDate, eDate);
+      const sDate = this.timeValue[0];
+      const eDate = this.timeValue[1];
+      // console.log(eid, sDate, eDate);
       let res = null;
       try {
-        res = await this.$store.dispatch("getRecordsByEidAndDate", {
-          equipId: eid,
-          startTime: sDate,
-          endTime: eDate,
-        });
+        res = await this.$store.dispatch(
+          "getStatusRecordsByEidAndDate",
+          JSON.stringify({
+            equipId: eid,
+            startTime: sDate,
+            endTime: eDate,
+          })
+        );
         if (res == "ok") {
-          alert("查询成功");
+          this.statusTableData = this.formatStatusData(this.statusData);
+          // alert("查询成功");
         } else {
           alert("查询失败");
         }
