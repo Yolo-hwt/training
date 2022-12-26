@@ -151,13 +151,13 @@ const mutations = {
 
                 // console.log(dataItem);
                 if (dataItem !== null && dataItem !== undefined) {
-                    console.log(recordsData.length);
+                    //console.log(recordsData.length);
                     dataItem.recordId = recordsData.length;
                     recordsData.push(dataItem);
                 }
             }
         }
-        console.log(recordsData);
+        // console.log(recordsData);
         state.testRecordList = recordsData;
     },
     //点检记录插入state
@@ -169,6 +169,7 @@ const actions = {
     //上报设备错误
     async sendDeviceError({ commit }, errorinfo = {}) {
         let result = await SendEquipErrorById(errorinfo);
+        console.log("保修结果", result);
         // if (result.code == 200 && result.data == true) {
         return 'ok';
         // } else {
@@ -178,8 +179,9 @@ const actions = {
     //添加一条点检记录
     async addEquipCheckRecord({ commit }, workobj = {}) {
         //点检记录插入state
-        commit('ADDTESTRECORD', workobj);
+        // commit('ADDTESTRECORD', workobj);
         let result = await SendEquipCheckRecord(workobj);
+
         // if (result.code == 200 && result.data == true) {
         return 'ok';
         // } else {
@@ -189,7 +191,7 @@ const actions = {
     //获取所有点检记录
     async getAllCheckList({ commit }) {
         let result = await GetAllEquipCheckList();
-        console.log(result);
+        // console.log(result);
         // if (result.code == 200) {
         commit('ALLTESTRECORD', result);
         return 'ok';
@@ -200,7 +202,7 @@ const actions = {
     //根据设备和日期获取点检记录
     async getCheckRecordsByEidAndDate({ commit }, infoObj = {}) {
         let result = await GetEquipCheckListByIdAndDate(infoObj);
-        console.log('check-res', result);
+        // console.log('check-res', result);
         // if (result.code == 200) {
         commit('SEARCHTESTRECORD', result);
         return 'ok';

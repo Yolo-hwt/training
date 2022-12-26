@@ -96,7 +96,8 @@
               v-model="addRecordData.checkDate"
               align="right"
               type="date"
-              placeholder="选择日期"
+              disabled
+              :placeholder="curDateTime"
               :picker-options="pickerOptions"
             >
             </el-date-picker>
@@ -152,7 +153,12 @@
             </el-table-column>
             <el-table-column prop="checkPerson" label="检修工" width="110">
             </el-table-column>
-            <el-table-column prop="checkDate" label="检修日期" width="220">
+            <el-table-column
+              prop="checkDate"
+              label="检修日期"
+              width="220"
+              sortable
+            >
             </el-table-column>
             <el-table-column prop="checkResult" label="结果" width="100">
             </el-table-column>
@@ -216,6 +222,7 @@ echarts.use([
 export default {
   data() {
     return {
+      curDateTime: FormatDate(new Date()),
       equipValue: [],
       //日期选项
       pickerOptions: {
@@ -408,7 +415,10 @@ export default {
       };
       let res = null;
       try {
-        res = await this.$store.dispatch("sendDeviceError", errorobj);
+        res = await this.$store.dispatch(
+          "sendDeviceError",
+          JSON.stringify(errorobj)
+        );
         if (res == "ok") {
           alert("上报错误成功！等待检修");
         }
@@ -462,10 +472,10 @@ export default {
         alert("请选择点检人员！");
         return false;
       }
-      if (this.addRecordData.checkDate == "") {
-        alert("请选择点检日期！");
-        return false;
-      }
+      // if (this.addRecordData.checkDate == "") {
+      //   alert("请选择点检日期！");
+      //   return false;
+      // }
       if (this.addRecordData.checkResult == "") {
         alert("请选择检测结果！");
         return false;
@@ -501,7 +511,7 @@ export default {
       //根据eid填充设备名称
       this.addRecordData.deviceName = "设备" + this.addRecordData.equipId;
       //格式化日期
-      this.addRecordData.checkDate = FormatDate(this.addRecordData.checkDate);
+      this.addRecordData.checkDate = FormatDate(new Date());
       //复制得到数据对象
       const data = JSON.stringify(
         Object.assign(
@@ -519,6 +529,8 @@ export default {
       let res = null;
       try {
         res = await this.$store.dispatch("addEquipCheckRecord", data);
+        //重新更新点检记录表格
+        await this.$store.dispatch("getAllCheckList");
         if (res == "ok") {
           alert("点检记录插入成功！");
         }

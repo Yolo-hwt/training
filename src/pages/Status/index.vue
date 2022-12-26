@@ -67,7 +67,12 @@
             </el-table-column>
             <el-table-column prop="deviceName" label="设备名" width="120">
             </el-table-column>
-            <el-table-column prop="checkDate" label="检测日期" width="230">
+            <el-table-column
+              prop="checkDate"
+              label="检测日期"
+              width="230"
+              sortable
+            >
             </el-table-column>
             <el-table-column prop="checkResult" label="状态" width="100">
             </el-table-column>
